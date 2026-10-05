@@ -1,0 +1,72 @@
+name: Mortofe visual capture
+
+on:
+  push:
+    paths:
+      - 'Mortofe/**'
+      - '.github/workflows/mortofe-visual-capture.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install virtual display
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends xvfb libgl1-mesa-dri
+
+      - name: Fetch pinned Godot 4.7.2
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -L --fail --retry 3 \
+            -o godot.zip \
+            https://github.com/godotengine/godot/releases/download/4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64.zip
+          echo 'cadd3204e728a35d3f13adb7fd0d7902636b79f6b95c40c265eb73b6c35329e4  godot.zip' | sha256sum -c -
+          unzip -q godot.zip
+          mv Godot_v4.7.2-stable_linux.x86_64 godot
+          chmod +x godot
+
+      - name: Import project
+        shell: bash
+        run: |
+          set -euo pipefail
+          ./godot --headless --path Mortofe --editor --quit
+
+      - name: Capture Mortofe frames
+        shell: bash
+        env:
+          LIBGL_ALWAYS_SOFTWARE: '1'
+        run: |
+          set -euo pipefail
+          rm -rf Mortofe/captures
+          mkdir -p Mortofe/captures
+          xvfb-run -a -s '-screen 0 1280x720x24' ./godot \
+            --path Mortofe \
+            --rendering-method gl_compatibility \
+            --display-driver x11 \
+            --audio-driver Dummy \
+            --script res://tools/capture_screens.gd
+          test -s Mortofe/captures/01_idle.png
+          test -s Mortofe/captures/02_combat.png
+          test -s Mortofe/captures/03_double_jump.png
+          test -s Mortofe/captures/04_locomotion_zone.png
+          sha256sum Mortofe/captures/*.png
+
+      - name: Upload screenshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: Mortofe-visual-captures
+          path: Mortofe/captures/*.png
+          if-no-files-found: error
+          retention-days: 14
