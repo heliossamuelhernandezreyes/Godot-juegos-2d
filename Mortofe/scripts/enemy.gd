@@ -5,6 +5,9 @@ signal damaged(amount: int, remaining_health: int, world_position: Vector2)
 
 const Hitbox2D = preload("res://scripts/combat/hitbox_2d.gd")
 const Hurtbox2D = preload("res://scripts/combat/hurtbox_2d.gd")
+const ENEMY_IDLE = preload("res://art/characters/enemy/enemy_idle.svg")
+const ENEMY_ATTACK = preload("res://art/characters/enemy/enemy_attack.svg")
+const ENEMY_HURT = preload("res://art/characters/enemy/enemy_hurt.svg")
 
 @export var move_speed := 92.0
 @export var aggro_distance := 520.0
@@ -20,6 +23,7 @@ var hit_stun_left := 0.0
 var facing := -1
 var gravity := float(ProjectSettings.get_setting("physics/2d/default_gravity", 980.0))
 var attack_hitbox: Area2D
+var visual: Sprite2D
 
 func _ready() -> void:
 	health = max_health
@@ -28,6 +32,7 @@ func _ready() -> void:
 	_build_collision()
 	_build_hurtbox()
 	_build_attack_hitbox()
+	_build_visual()
 	queue_redraw()
 
 func _physics_process(delta: float) -> void:
@@ -47,6 +52,7 @@ func _physics_process(delta: float) -> void:
 	if is_instance_valid(attack_hitbox):
 		attack_hitbox.position.x = 36.0 * float(facing)
 	move_and_slide()
+	_update_visual()
 	queue_redraw()
 
 func _update_ai(delta: float) -> void:
@@ -121,22 +127,30 @@ func _build_attack_hitbox() -> void:
 	attack_hitbox.configure(self, 1, 32, rect)
 	add_child(attack_hitbox)
 
+func _build_visual() -> void:
+	visual = Sprite2D.new()
+	visual.texture = ENEMY_IDLE
+	visual.position = Vector2(0, -20)
+	visual.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+	visual.z_index = 2
+	add_child(visual)
+
+func _update_visual() -> void:
+	if not is_instance_valid(visual):
+		return
+	var next_texture: Texture2D = ENEMY_IDLE
+	var attack_offset := 0.0
+	if hurt_flash_left > 0.0:
+		next_texture = ENEMY_HURT
+	elif attack_window_left > 0.0:
+		next_texture = ENEMY_ATTACK
+		attack_offset = 16.0 * float(facing)
+	visual.texture = next_texture
+	visual.flip_h = facing < 0
+	visual.position = Vector2(attack_offset, -20)
+
 func _draw() -> void:
-	var dir := float(facing)
-	var flash := hurt_flash_left > 0.0
-	var robe := Color("f1dfd0") if flash else Color("252027")
-	var accent := Color("ffccb0") if flash else Color("7a302f")
-	var iron := Color("e3d7c7") if flash else Color("5f5959")
-	draw_polygon(PackedVector2Array([
-		Vector2(-18.0 * dir, -12), Vector2(-24.0 * dir, 26), Vector2(0, 31),
-		Vector2(22.0 * dir, 24), Vector2(17.0 * dir, -11)
-	]), PackedColorArray([robe]))
-	draw_circle(Vector2(0, -27), 12.0, Color("151318"))
-	draw_line(Vector2(-8.0 * dir, -33), Vector2(8.0 * dir, -20), accent, 3.0)
-	draw_line(Vector2(11.0 * dir, -2), Vector2(38.0 * dir, 19), iron, 5.0)
-	draw_circle(Vector2(40.0 * dir, 21), 7.0, accent)
-	if attack_window_left > 0.0:
-		draw_arc(Vector2(16.0 * dir, 2), 48.0, -0.5 if facing > 0 else PI - 0.5, 0.45 if facing > 0 else PI + 0.45, 14, Color(0.72, 0.15, 0.13, 0.58), 4.0)
+	# Health pips remain as gameplay feedback even after sprite integration.
 	for i in range(max_health):
-		var c := accent if i < health else Color("2b292c")
-		draw_rect(Rect2(-18 + i * 13, -52, 9, 3), c, true)
+		var c := Color("a74749") if i < health else Color("2b292c")
+		draw_rect(Rect2(-18 + i * 13, -58, 9, 3), c, true)
