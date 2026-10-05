@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "project": "Mortofe",
+  "root": "res://art/production",
+  "policy": {
+    "unit": "one-folder-per-sprite",
+    "immutable_approved_master": true,
+    "atlas_after_animation_approval": true,
+    "required_files": ["metadata.json", "master.png", "normalized.png"],
+    "states": ["planned", "draft", "review", "approved", "rejected", "superseded"]
+  },
+  "sprites": [
+    {
+      "id": "SPR_PLAYER_IDLE_001",
+      "character": "player",
+      "animation": "idle",
+      "frame": 1,
+      "folder": "res://art/production/player/idle/SPR_PLAYER_IDLE_001",
+      "status": "planned"
+    }
+  ]
+}
