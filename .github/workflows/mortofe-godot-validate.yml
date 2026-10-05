@@ -21,7 +21,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Audit sprites with pinned ARCONT tool
+      - name: Prepare production art with pinned ARCONT pipeline
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 Mortofe/tools/prepare_production_art.py \
+            --project-root Mortofe \
+            --audit \
+            --report-dir /tmp/mortofe-production-art
+          test -s Mortofe/art/master/player/player_master_v1.png
+          test -s Mortofe/art/normalized/player/player_idle_prod_v1.png
+
+      - name: Audit legacy prototype sprites with pinned ARCONT tool
         shell: bash
         run: |
           set -euo pipefail
