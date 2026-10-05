@@ -139,18 +139,15 @@ func _update_visual() -> void:
 	if not is_instance_valid(visual):
 		return
 	var next_texture: Texture2D = ENEMY_IDLE
-	var attack_offset := 0.0
 	if hurt_flash_left > 0.0:
 		next_texture = ENEMY_HURT
 	elif attack_window_left > 0.0:
 		next_texture = ENEMY_ATTACK
-		attack_offset = 16.0 * float(facing)
 	visual.texture = next_texture
 	visual.flip_h = facing < 0
-	visual.position = Vector2(attack_offset, -20)
+	visual.position = Vector2(0, -20)
 
 func _draw() -> void:
-	# Health pips remain as gameplay feedback even after sprite integration.
 	for i in range(max_health):
 		var c := Color("a74749") if i < health else Color("2b292c")
 		draw_rect(Rect2(-18 + i * 13, -58, 9, 3), c, true)
