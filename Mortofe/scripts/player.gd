@@ -7,7 +7,9 @@ signal jumped(stage: int)
 const Hitbox2D = preload("res://scripts/combat/hitbox_2d.gd")
 const Hurtbox2D = preload("res://scripts/combat/hurtbox_2d.gd")
 const PLAYER_ATLAS: Texture2D = preload("res://art/generated/player_atlas.svg")
+const PLAYER_PRODUCTION_CANDIDATE: Texture2D = preload("res://art/normalized/player/player_idle_prod_v1.png")
 const FRAME_SIZE := Vector2(256, 256)
+const PRODUCTION_CANDIDATE_MODE := true
 
 @export var move_speed := 285.0
 @export var ground_accel := 1900.0
@@ -186,21 +188,45 @@ func _add_animation(frames: SpriteFrames, name: StringName, indices: Array[int],
 	for index in indices:
 		frames.add_frame(name, _atlas_frame(index))
 
+func _add_candidate_animation(frames: SpriteFrames, name: StringName, fps: float, looped: bool) -> void:
+	frames.add_animation(name)
+	frames.set_animation_speed(name, fps)
+	frames.set_animation_loop(name, looped)
+	frames.add_frame(name, PLAYER_PRODUCTION_CANDIDATE)
+
 func _build_visual() -> void:
 	var frames := SpriteFrames.new()
 	if frames.has_animation(&"default"):
 		frames.remove_animation(&"default")
-	_add_animation(frames, &"idle", [0, 1], 2.4, true)
-	_add_animation(frames, &"run", [2, 3, 4, 5], 9.5, true)
-	_add_animation(frames, &"jump", [6, 7, 8], 8.0, false)
-	_add_animation(frames, &"attack", [9, 10], 12.5, false)
-	_add_animation(frames, &"hurt", [11], 1.0, false)
+
+	if PRODUCTION_CANDIDATE_MODE:
+		# Production gate v1 intentionally reuses one normalized frame across states.
+		# This validates silhouette, gameplay scale, pivot/baseline, HUD overlap and
+		# movement/camera integration before animation production is expanded.
+		_add_candidate_animation(frames, &"idle", 1.0, true)
+		_add_candidate_animation(frames, &"run", 1.0, true)
+		_add_candidate_animation(frames, &"jump", 1.0, false)
+		_add_candidate_animation(frames, &"attack", 1.0, false)
+		_add_candidate_animation(frames, &"hurt", 1.0, false)
+	else:
+		_add_animation(frames, &"idle", [0, 1], 2.4, true)
+		_add_animation(frames, &"run", [2, 3, 4, 5], 9.5, true)
+		_add_animation(frames, &"jump", [6, 7, 8], 8.0, false)
+		_add_animation(frames, &"attack", [9, 10], 12.5, false)
+		_add_animation(frames, &"hurt", [11], 1.0, false)
 
 	visual = AnimatedSprite2D.new()
 	visual.sprite_frames = frames
 	visual.animation = &"idle"
-	visual.position = Vector2(0, -39)
-	visual.scale = Vector2(0.62, 0.62)
+	if PRODUCTION_CANDIDATE_MODE:
+		# Normalized asset: 384x384, baseline y=350, center y=192.
+		# (350 - 192) * 0.5 = 79 px, so this keeps the visual feet on body origin.
+		# 300 px visual height * 0.5 = 150 px ~= 20.8% of the 720p design height.
+		visual.position = Vector2(0, -79)
+		visual.scale = Vector2(0.5, 0.5)
+	else:
+		visual.position = Vector2(0, -39)
+		visual.scale = Vector2(0.62, 0.62)
 	visual.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
 	visual.z_index = 2
 	visual.play()
