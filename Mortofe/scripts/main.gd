@@ -7,6 +7,7 @@ const MobileTelemetry = preload("res://scripts/mobile_telemetry.gd")
 
 var player: CharacterBody2D
 var hud_status: Label
+var hud_panel: ColorRect
 var enemy_count := 0
 var mobile_controls: Control
 
@@ -19,6 +20,7 @@ func _ready() -> void:
 	_spawn_enemy(Vector2(1320, 570))
 	_spawn_enemy(Vector2(1770, 410))
 	_build_mobile_runtime()
+	get_viewport().size_changed.connect(_refresh_hud_layout)
 	queue_redraw()
 
 func _process(_delta: float) -> void:
@@ -105,16 +107,33 @@ func _build_hud() -> void:
 	var layer := CanvasLayer.new()
 	layer.layer = 10
 	add_child(layer)
-	var panel := ColorRect.new()
-	panel.position = Vector2(20, 18)
-	panel.size = Vector2(500, 86)
-	panel.color = Color(0.025, 0.02, 0.03, 0.82)
-	layer.add_child(panel)
+	hud_panel = ColorRect.new()
+	hud_panel.size = Vector2(500, 86)
+	hud_panel.color = Color(0.025, 0.02, 0.03, 0.82)
+	layer.add_child(hud_panel)
 	hud_status = Label.new()
-	hud_status.position = Vector2(34, 28)
 	hud_status.add_theme_font_size_override("font_size", 18)
 	hud_status.add_theme_color_override("font_color", Color("d2c3ad"))
 	layer.add_child(hud_status)
+	_refresh_hud_layout()
+
+func _refresh_hud_layout() -> void:
+	if not is_instance_valid(hud_panel) or not is_instance_valid(hud_status):
+		return
+	var origin := _safe_ui_origin() + Vector2(20, 18)
+	hud_panel.position = origin
+	hud_status.position = origin + Vector2(14, 10)
+
+func _safe_ui_origin() -> Vector2:
+	if OS.get_name() != "Android" and OS.get_name() != "iOS":
+		return Vector2.ZERO
+	var viewport_size := get_viewport().get_visible_rect().size
+	var physical_size := DisplayServer.screen_get_size()
+	var physical_safe := DisplayServer.get_display_safe_area()
+	if physical_size.x <= 0 or physical_size.y <= 0 or physical_safe.size.x <= 0 or physical_safe.size.y <= 0:
+		return Vector2.ZERO
+	var scale := Vector2(viewport_size.x / float(physical_size.x), viewport_size.y / float(physical_size.y))
+	return Vector2(physical_safe.position) * scale
 
 func _build_mobile_runtime() -> void:
 	var telemetry := MobileTelemetry.new()
