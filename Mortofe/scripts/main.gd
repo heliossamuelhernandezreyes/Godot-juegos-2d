@@ -10,6 +10,7 @@ var hud_status: Label
 var hud_panel: ColorRect
 var enemy_count := 0
 var mobile_controls: Control
+var mobile_metrics_text := "MÉTRICAS: esperando muestra..."
 
 func _ready() -> void:
 	_install_input_map()
@@ -30,7 +31,7 @@ func _process(_delta: float) -> void:
 			player.velocity = Vector2.ZERO
 		if is_instance_valid(hud_status):
 			var controls_line := "CONTROLES TÁCTILES ACTIVOS" if is_instance_valid(mobile_controls) and mobile_controls.controls_active else "A/D mover · ESPACIO saltar · SHIFT dash · J / clic atacar"
-			hud_status.text = "MORTOFE  //  PRE-ALPHA MOBILE\nHP %d   //   ENEMIGOS %d\n%s" % [player.health, enemy_count, controls_line]
+			hud_status.text = "MORTOFE  //  PRE-ALPHA MOBILE\nHP %d   //   ENEMIGOS %d\n%s\n%s" % [player.health, enemy_count, controls_line, mobile_metrics_text]
 
 func _draw() -> void:
 	# Placeholder visual deliberately code-driven: it tests gameplay before final art lands.
@@ -108,11 +109,11 @@ func _build_hud() -> void:
 	layer.layer = 10
 	add_child(layer)
 	hud_panel = ColorRect.new()
-	hud_panel.size = Vector2(500, 86)
+	hud_panel.size = Vector2(560, 112)
 	hud_panel.color = Color(0.025, 0.02, 0.03, 0.82)
 	layer.add_child(hud_panel)
 	hud_status = Label.new()
-	hud_status.add_theme_font_size_override("font_size", 18)
+	hud_status.add_theme_font_size_override("font_size", 16)
 	hud_status.add_theme_color_override("font_color", Color("d2c3ad"))
 	layer.add_child(hud_status)
 	_refresh_hud_layout()
@@ -138,6 +139,7 @@ func _safe_ui_origin() -> Vector2:
 func _build_mobile_runtime() -> void:
 	var telemetry := MobileTelemetry.new()
 	telemetry.name = "MobileTelemetry"
+	telemetry.report_ready.connect(_on_mobile_report_ready)
 	add_child(telemetry)
 
 	var controls_layer := CanvasLayer.new()
@@ -147,6 +149,13 @@ func _build_mobile_runtime() -> void:
 	mobile_controls = MobileControls.new()
 	mobile_controls.name = "MobileControls"
 	controls_layer.add_child(mobile_controls)
+
+func _on_mobile_report_ready(report: Dictionary) -> void:
+	var p50 := float(report.get("p50_ms", 0.0))
+	var p95 := float(report.get("p95_ms", 0.0))
+	var p99 := float(report.get("p99_ms", 0.0))
+	var approx_fps := 1000.0 / maxf(p50, 0.001)
+	mobile_metrics_text = "~%.0f FPS · p50 %.2f ms · p95 %.2f ms · p99 %.2f ms" % [approx_fps, p50, p95, p99]
 
 func _install_input_map() -> void:
 	_ensure_action("move_left", [KEY_A, KEY_LEFT])
