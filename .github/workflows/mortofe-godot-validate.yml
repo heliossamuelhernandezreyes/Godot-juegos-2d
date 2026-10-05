@@ -21,6 +21,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Audit sprites with pinned ARCONT tool
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -L --fail --retry 3 \
+            -o sprite_audit.py \
+            https://raw.githubusercontent.com/heliossamuelhernandezreyes/Arcont/c5c0ce20c5ee2e99b6d0a6fba11cd34c282ecc01/tools/sprite_audit.py
+          python3 sprite_audit.py Mortofe/art/sprite_manifest.json --project-root Mortofe
+
       - name: Fetch pinned Godot 4.7.2
         shell: bash
         run: |
