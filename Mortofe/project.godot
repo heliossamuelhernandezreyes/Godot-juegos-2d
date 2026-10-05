@@ -1,10 +1,11 @@
 ; Engine configuration file.
-; Mortofe — Godot 4.7.2 baseline
+; Mortofe — Godot 4.7.2 mobile-first baseline
 config_version=5
 
 [application]
 config/name="Mortofe"
 run/main_scene="res://main.tscn"
+run/max_fps=0
 
 [display]
 window/size/viewport_width=1280
@@ -12,6 +13,13 @@ window/size/viewport_height=720
 window/size/window_width_override=1280
 window/size/window_height_override=720
 window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+window/handheld/orientation=0
+window/energy_saving/keep_screen_on=true
+window/frame_pacing/android/swappy_mode=2
+
+[input_devices]
+pointing/emulate_touch_from_mouse=true
 
 [rendering]
 renderer/rendering_method="gl_compatibility"
