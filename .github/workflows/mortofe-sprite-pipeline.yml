@@ -1,0 +1,65 @@
+name: Mortofe production sprite pipeline
+
+on:
+  push:
+    paths:
+      - 'Mortofe/art/**'
+      - 'Mortofe/tools/build_player_master.py'
+      - 'Mortofe/tools/prepare_production_art.py'
+      - '.github/workflows/mortofe-sprite-pipeline.yml'
+  pull_request:
+    paths:
+      - 'Mortofe/art/**'
+      - 'Mortofe/tools/build_player_master.py'
+      - 'Mortofe/tools/prepare_production_art.py'
+      - '.github/workflows/mortofe-sprite-pipeline.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  production-sprite-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Prepare and audit production player
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/mortofe-sprite-reports
+          python Mortofe/tools/prepare_production_art.py \
+            --project-root Mortofe \
+            --audit \
+            --report-dir /tmp/mortofe-sprite-reports
+          MASTER_1="$(sha256sum Mortofe/art/master/player/player_master_v1.png | awk '{print $1}')"
+          NORM_1="$(sha256sum Mortofe/art/normalized/player/player_idle_prod_v1.png | awk '{print $1}')"
+          printf 'master_sha256=%s\nnormalized_sha256=%s\n' "$MASTER_1" "$NORM_1" | tee /tmp/mortofe-sprite-reports/hashes.txt
+
+          # Consumer-level determinism check: rebuilding from the same recipe and pinned
+          # ARCONT commit must produce byte-identical master and normalized derivative.
+          python Mortofe/tools/prepare_production_art.py \
+            --project-root Mortofe \
+            --audit \
+            --report-dir /tmp/mortofe-sprite-reports/repeat
+          MASTER_2="$(sha256sum Mortofe/art/master/player/player_master_v1.png | awk '{print $1}')"
+          NORM_2="$(sha256sum Mortofe/art/normalized/player/player_idle_prod_v1.png | awk '{print $1}')"
+          test "$MASTER_1" = "$MASTER_2"
+          test "$NORM_1" = "$NORM_2"
+          echo "deterministic=true" | tee -a /tmp/mortofe-sprite-reports/hashes.txt
+
+      - name: Upload production sprite reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: Mortofe-production-sprite-reports
+          path: /tmp/mortofe-sprite-reports/**
+          if-no-files-found: error
+          retention-days: 14

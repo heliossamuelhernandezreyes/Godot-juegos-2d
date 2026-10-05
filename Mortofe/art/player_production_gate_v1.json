@@ -1,0 +1,58 @@
+{
+  "schema_version": 2,
+  "candidate": "player-production-v1",
+  "status": "approved-for-animation-prototyping",
+  "arcont_commit": "3dd31bd962999f36de264c5bb364f41624ca7f0b",
+  "source_recipe": {
+    "path": "res://tools/build_player_master.py",
+    "generated_master": "res://art/master/player/player_master_v1.png",
+    "format": "non-interlaced 8-bit RGBA PNG",
+    "size": [512, 512],
+    "alpha_bbox_threshold_8": [179, 15, 455, 480],
+    "sha256": "6859f7b2bafcc80f32e46b12c659e363c7c77604cdfbe2370e956d9f12aae209",
+    "rationale": "The first gate keeps the art source as a deterministic text recipe so binary transport cannot silently corrupt the PNG."
+  },
+  "normalized": {
+    "path": "res://art/normalized/player/player_idle_prod_v1.png",
+    "canvas": [384, 384],
+    "pivot": [192, 350],
+    "baseline_y": 350,
+    "target_visual_height": 300,
+    "output_alpha_bbox": [143, 51, 321, 350],
+    "visual_size": [179, 300],
+    "baseline_drift_px": 0,
+    "pivot_drift_px": 0,
+    "transparent_padding_pct": 63.582,
+    "content_sha256": "ebb4f38b93ca8989e86697637f3d00a59189d0e3b6d427f0f8a6d91730fa5da2",
+    "png_sha256": "f508591c7f9e209006718eead417ab77036d1421e2e48acae1fe378ac9816b9e"
+  },
+  "runtime_gate": {
+    "scale": 0.5,
+    "visible_height_px": 150,
+    "logical_viewport_height_px": 720,
+    "screen_height_pct": 20.8333,
+    "value_backgrounds": ["dark-cold", "mid-stone", "warm-earth"],
+    "visual_review": "pass-for-animation-prototyping",
+    "review_notes": [
+      "Silhouette, crown/helmet, weapon and red-gold focal accents remain readable across all three value backgrounds.",
+      "Feet align to the intended gameplay baseline without visible crop or pivot offset in world captures.",
+      "The candidate remains readable under the mobile HUD at the intended gameplay scale."
+    ]
+  },
+  "validation": {
+    "production_sprite_pipeline_run": 18,
+    "visual_capture_run": 35,
+    "godot_validation_run": 76,
+    "deterministic_repeat_build": true,
+    "sprite_audit_ok": true,
+    "godot_import_parse_smoke_ok": true,
+    "android_debug_export_ok": true,
+    "visual_capture_artifact_sha256": "9bde6585e3d054926a4d4164a71496ba524215756c2f9e0159a182471bb588c6"
+  },
+  "limitations": [
+    "This is a silhouette/pivot/readability production candidate, not final character illustration quality.",
+    "One normalized pose is still reused across idle/run/jump/attack/hurt, so motion quality and costume continuity across distinct poses are not yet validated.",
+    "Attack anticipation, active pose, recovery and exact weapon-reach agreement require real attack frames before animation approval."
+  ],
+  "next_gate": "Produce distinct run and attack test frames on the same character/canvas family, normalize them through ARCONT, then validate drift, combat reach and motion readability before expanding the full animation set."
+}

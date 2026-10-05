@@ -5,6 +5,10 @@ on:
     paths:
       - 'Mortofe/**'
       - '.github/workflows/mortofe-visual-capture.yml'
+  pull_request:
+    paths:
+      - 'Mortofe/**'
+      - '.github/workflows/mortofe-visual-capture.yml'
   workflow_dispatch:
 
 permissions:
@@ -17,6 +21,15 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Prepare production art with pinned ARCONT pipeline
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 Mortofe/tools/prepare_production_art.py \
+            --project-root Mortofe \
+            --audit \
+            --report-dir /tmp/mortofe-production-art
 
       - name: Install virtual display
         shell: bash
@@ -61,6 +74,7 @@ jobs:
           test -s Mortofe/captures/02_combat.png
           test -s Mortofe/captures/03_double_jump.png
           test -s Mortofe/captures/04_locomotion_zone.png
+          test -s Mortofe/captures/05_player_value_gate.png
           sha256sum Mortofe/captures/*.png
 
       - name: Upload screenshots

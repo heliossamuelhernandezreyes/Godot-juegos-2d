@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "project": "Mortofe",
+  "art_direction": "dark-medieval-baroque",
+  "runtime_profile": "mobile-non-pixel-art",
+  "quality_gates": {
+    "max_baseline_drift_px": 1,
+    "max_pivot_drift_px": 1,
+    "max_visual_height_drift_pct": 2,
+    "transparent_padding_warning_pct": 85,
+    "alpha_threshold": 8
+  },
+  "characters": {
+    "player": {
+      "canvas": [384, 384],
+      "anchor": "feet",
+      "baseline_y": 350,
+      "pivot": [192, 350],
+      "states": {
+        "idle": [
+          {
+            "path": "res://art/normalized/player/player_idle_prod_v1.png",
+            "pivot": [192, 350]
+          }
+        ]
+      }
+    }
+  }
+}

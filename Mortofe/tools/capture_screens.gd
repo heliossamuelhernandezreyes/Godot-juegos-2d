@@ -3,6 +3,7 @@ extends SceneTree
 const WIDTH := 1280
 const HEIGHT := 720
 const OUTPUT_DIR := "res://captures"
+const PLAYER_PRODUCTION_CANDIDATE_PATH := "res://art/normalized/player/player_idle_prod_v1.png"
 
 func _initialize() -> void:
 	call_deferred("_run")
@@ -27,10 +28,13 @@ func _run() -> void:
 		push_error("Mortofe capture runner could not find player")
 		quit(3)
 		return
+	if not player.production_candidate_active:
+		push_error("Production player candidate was not prepared/imported")
+		quit(6)
+		return
 
 	await _capture("01_idle.png")
 
-	# Combat composition: place the player beside the first enemy and open the attack window.
 	player.global_position = Vector2(745, 575)
 	player.velocity = Vector2.ZERO
 	player.facing = 1
@@ -39,7 +43,6 @@ func _run() -> void:
 	await _wait_frames(2)
 	await _capture("02_combat.png")
 
-	# Double-jump composition: freeze a real second-jump state in mid-air.
 	player.global_position = Vector2(1250, 330)
 	player.velocity = Vector2(120, -260)
 	player.jumps_used = 2
@@ -49,7 +52,6 @@ func _run() -> void:
 	await _wait_frames(28)
 	await _capture("03_double_jump.png")
 
-	# Right-hand locomotion benchmark with one-way platform, slope and moving platform.
 	player.global_position = Vector2(2400, 545)
 	player.velocity = Vector2.ZERO
 	player.jumps_used = 0
@@ -57,7 +59,73 @@ func _run() -> void:
 	await _wait_frames(36)
 	await _capture("04_locomotion_zone.png")
 
+	scene.queue_free()
+	await _wait_frames(2)
+	var gate := _build_player_value_gate()
+	root.add_child(gate)
+	await _wait_frames(3)
+	await _capture("05_player_value_gate.png")
+
 	quit(0)
+
+func _build_player_value_gate() -> Node2D:
+	var gate := Node2D.new()
+	gate.name = "PlayerValueGate"
+	var candidate := load(PLAYER_PRODUCTION_CANDIDATE_PATH) as Texture2D
+	if candidate == null:
+		push_error("Could not load production candidate for value gate")
+		return gate
+
+	var band_width := float(WIDTH) / 3.0
+	var colors := [Color("11141d"), Color("565257"), Color("80604b")]
+	var labels := ["DARK / COLD", "MID / STONE", "WARM / EARTH"]
+	var floor_y := 560.0
+
+	for i in range(3):
+		var left := band_width * i
+		var right := band_width * (i + 1)
+		var band := Polygon2D.new()
+		band.polygon = PackedVector2Array([
+			Vector2(left, 0), Vector2(right, 0),
+			Vector2(right, HEIGHT), Vector2(left, HEIGHT),
+		])
+		band.color = colors[i]
+		band.z_index = -10
+		gate.add_child(band)
+
+		var floor_line := Line2D.new()
+		floor_line.points = PackedVector2Array([
+			Vector2(left + 24.0, floor_y), Vector2(right - 24.0, floor_y),
+		])
+		floor_line.width = 2.0
+		floor_line.default_color = Color(1.0, 1.0, 1.0, 0.34)
+		gate.add_child(floor_line)
+
+		var sprite := Sprite2D.new()
+		sprite.texture = candidate
+		sprite.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+		sprite.scale = Vector2(0.5, 0.5)
+		# Normalized center y=192, feet y=350: (350 - 192) * 0.5 = 79 px.
+		sprite.position = Vector2(left + band_width * 0.5, floor_y - 79.0)
+		sprite.z_index = 2
+		gate.add_child(sprite)
+
+		var caption := Label.new()
+		caption.text = labels[i]
+		caption.position = Vector2(left + 24.0, 34.0)
+		caption.add_theme_font_size_override("font_size", 18)
+		caption.modulate = Color(1.0, 1.0, 1.0, 0.82)
+		caption.z_index = 4
+		gate.add_child(caption)
+
+	var title := Label.new()
+	title.text = "MORTOFE — PLAYER PRODUCTION GATE V1 — 150 px visible height / 720p"
+	title.position = Vector2(24.0, HEIGHT - 48.0)
+	title.add_theme_font_size_override("font_size", 16)
+	title.modulate = Color(1.0, 1.0, 1.0, 0.72)
+	title.z_index = 4
+	gate.add_child(title)
+	return gate
 
 func _wait_frames(count: int) -> void:
 	for _i in range(count):
