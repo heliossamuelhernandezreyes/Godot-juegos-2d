@@ -6,10 +6,8 @@ signal jumped(stage: int)
 
 const Hitbox2D = preload("res://scripts/combat/hitbox_2d.gd")
 const Hurtbox2D = preload("res://scripts/combat/hurtbox_2d.gd")
-const PLAYER_IDLE = preload("res://art/characters/player/player_idle.svg")
-const PLAYER_RUN = preload("res://art/characters/player/player_run.svg")
-const PLAYER_JUMP = preload("res://art/characters/player/player_jump.svg")
-const PLAYER_ATTACK = preload("res://art/characters/player/player_attack.svg")
+const PLAYER_ATLAS: Texture2D = preload("res://art/generated/player_atlas.svg")
+const FRAME_SIZE := Vector2(256, 256)
 
 @export var move_speed := 285.0
 @export var ground_accel := 1900.0
@@ -34,7 +32,7 @@ var invulnerability_left := 0.0
 var gravity := float(ProjectSettings.get_setting("physics/2d/default_gravity", 980.0))
 
 var attack_hitbox: Area2D
-var visual: Sprite2D
+var visual: AnimatedSprite2D
 
 func _ready() -> void:
 	collision_layer = 2
@@ -169,36 +167,66 @@ func _build_hurtbox() -> void:
 func _build_attack_hitbox() -> void:
 	attack_hitbox = Hitbox2D.new()
 	var rect := RectangleShape2D.new()
-	rect.size = Vector2(72, 54)
+	rect.size = Vector2(82, 58)
 	attack_hitbox.configure(self, 1, 64, rect)
 	add_child(attack_hitbox)
 
+func _atlas_frame(index: int) -> AtlasTexture:
+	var frame := AtlasTexture.new()
+	frame.atlas = PLAYER_ATLAS
+	var column := index % 4
+	var row := floori(index / 4.0)
+	frame.region = Rect2(Vector2(column, row) * FRAME_SIZE, FRAME_SIZE)
+	return frame
+
+func _add_animation(frames: SpriteFrames, name: StringName, indices: Array[int], fps: float, looped: bool) -> void:
+	frames.add_animation(name)
+	frames.set_animation_speed(name, fps)
+	frames.set_animation_loop(name, looped)
+	for index in indices:
+		frames.add_frame(name, _atlas_frame(index))
+
 func _build_visual() -> void:
-	visual = Sprite2D.new()
-	visual.texture = PLAYER_IDLE
-	visual.position = Vector2(0, -20)
+	var frames := SpriteFrames.new()
+	if frames.has_animation(&"default"):
+		frames.remove_animation(&"default")
+	_add_animation(frames, &"idle", [0, 1], 2.4, true)
+	_add_animation(frames, &"run", [2, 3, 4, 5], 9.5, true)
+	_add_animation(frames, &"jump", [6, 7, 8], 8.0, false)
+	_add_animation(frames, &"attack", [9, 10], 12.5, false)
+	_add_animation(frames, &"hurt", [11], 1.0, false)
+
+	visual = AnimatedSprite2D.new()
+	visual.sprite_frames = frames
+	visual.animation = &"idle"
+	visual.position = Vector2(0, -39)
+	visual.scale = Vector2(0.62, 0.62)
 	visual.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
 	visual.z_index = 2
+	visual.play()
 	add_child(visual)
 
 func _update_visual() -> void:
 	if not is_instance_valid(visual):
 		return
-	var next_texture: Texture2D = PLAYER_IDLE
-	if attack_left > 0.0:
-		next_texture = PLAYER_ATTACK
+	var next_animation: StringName = &"idle"
+	if invulnerability_left > 0.38:
+		next_animation = &"hurt"
+	elif attack_left > 0.0:
+		next_animation = &"attack"
 	elif not is_on_floor():
-		next_texture = PLAYER_JUMP
+		next_animation = &"jump"
 	elif absf(velocity.x) > 24.0:
-		next_texture = PLAYER_RUN
-	visual.texture = next_texture
+		next_animation = &"run"
+	if visual.animation != next_animation:
+		visual.play(next_animation)
 	visual.flip_h = facing < 0
-	visual.position = Vector2(0, -20)
 	visual.modulate = Color(1.0, 0.86, 0.86) if invulnerability_left > 0.0 and int(invulnerability_left * 24.0) % 2 == 0 else Color.WHITE
 
 func _build_camera() -> void:
 	var camera := Camera2D.new()
-	camera.position = Vector2(0, -70)
+	camera.position = Vector2(0, -74)
+	camera.zoom = Vector2(1.14, 1.14)
 	camera.position_smoothing_enabled = true
 	camera.position_smoothing_speed = 7.5
 	camera.limit_left = -900
@@ -209,7 +237,7 @@ func _build_camera() -> void:
 
 func _draw() -> void:
 	if jumps_used >= 2 and not is_on_floor():
-		draw_arc(Vector2(0, 24), 24.0, 0.0, TAU, 30, Color(0.75, 0.55, 0.34, 0.42), 2.0)
+		draw_arc(Vector2(0, 24), 30.0, 0.0, TAU, 30, Color(0.83, 0.58, 0.25, 0.48), 3.0)
 	if attack_left > 0.0:
 		var dir := float(facing)
-		draw_arc(Vector2(20.0 * dir, -4), 64.0, -0.65 if facing > 0 else PI - 0.65, 0.55 if facing > 0 else PI + 0.55, 18, Color(0.75, 0.18, 0.16, 0.55), 4.0)
+		draw_arc(Vector2(22.0 * dir, -7), 72.0, -0.65 if facing > 0 else PI - 0.65, 0.55 if facing > 0 else PI + 0.55, 20, Color(0.84, 0.22, 0.17, 0.42), 5.0)
