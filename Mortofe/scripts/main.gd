@@ -2,10 +2,13 @@ extends Node2D
 
 const PlayerController = preload("res://scripts/player.gd")
 const EnemyController = preload("res://scripts/enemy.gd")
+const MobileControls = preload("res://scripts/mobile_controls.gd")
+const MobileTelemetry = preload("res://scripts/mobile_telemetry.gd")
 
 var player: CharacterBody2D
 var hud_status: Label
 var enemy_count := 0
+var mobile_controls: Control
 
 func _ready() -> void:
 	_install_input_map()
@@ -15,6 +18,7 @@ func _ready() -> void:
 	_spawn_enemy(Vector2(820, 570))
 	_spawn_enemy(Vector2(1320, 570))
 	_spawn_enemy(Vector2(1770, 410))
+	_build_mobile_runtime()
 	queue_redraw()
 
 func _process(_delta: float) -> void:
@@ -23,7 +27,8 @@ func _process(_delta: float) -> void:
 			player.global_position = Vector2(260, 560)
 			player.velocity = Vector2.ZERO
 		if is_instance_valid(hud_status):
-			hud_status.text = "MORTOFE  //  PRE-ALPHA\nHP %d   //   ENEMIGOS %d\nA/D mover  ·  ESPACIO saltar  ·  SHIFT dash  ·  J / clic atacar" % [player.health, enemy_count]
+			var controls_line := "CONTROLES TÁCTILES ACTIVOS" if is_instance_valid(mobile_controls) and mobile_controls.controls_active else "A/D mover · ESPACIO saltar · SHIFT dash · J / clic atacar"
+			hud_status.text = "MORTOFE  //  PRE-ALPHA MOBILE\nHP %d   //   ENEMIGOS %d\n%s" % [player.health, enemy_count, controls_line]
 
 func _draw() -> void:
 	# Placeholder visual deliberately code-driven: it tests gameplay before final art lands.
@@ -98,10 +103,11 @@ func _on_enemy_died() -> void:
 
 func _build_hud() -> void:
 	var layer := CanvasLayer.new()
+	layer.layer = 10
 	add_child(layer)
 	var panel := ColorRect.new()
 	panel.position = Vector2(20, 18)
-	panel.size = Vector2(480, 86)
+	panel.size = Vector2(500, 86)
 	panel.color = Color(0.025, 0.02, 0.03, 0.82)
 	layer.add_child(panel)
 	hud_status = Label.new()
@@ -109,6 +115,19 @@ func _build_hud() -> void:
 	hud_status.add_theme_font_size_override("font_size", 18)
 	hud_status.add_theme_color_override("font_color", Color("d2c3ad"))
 	layer.add_child(hud_status)
+
+func _build_mobile_runtime() -> void:
+	var telemetry := MobileTelemetry.new()
+	telemetry.name = "MobileTelemetry"
+	add_child(telemetry)
+
+	var controls_layer := CanvasLayer.new()
+	controls_layer.name = "MobileControlsLayer"
+	controls_layer.layer = 20
+	add_child(controls_layer)
+	mobile_controls = MobileControls.new()
+	mobile_controls.name = "MobileControls"
+	controls_layer.add_child(mobile_controls)
 
 func _install_input_map() -> void:
 	_ensure_action("move_left", [KEY_A, KEY_LEFT])
