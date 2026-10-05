@@ -3,6 +3,7 @@ extends SceneTree
 const WIDTH := 1280
 const HEIGHT := 720
 const OUTPUT_DIR := "res://captures"
+const PLAYER_PRODUCTION_CANDIDATE := preload("res://art/normalized/player/player_idle_prod_v1.png")
 
 func _initialize() -> void:
 	call_deferred("_run")
@@ -57,7 +58,79 @@ func _run() -> void:
 	await _wait_frames(36)
 	await _capture("04_locomotion_zone.png")
 
+	# Production-art gate: inspect the exact normalized player at gameplay scale against
+	# three representative values without camera, particles or world geometry masking it.
+	scene.queue_free()
+	await _wait_frames(2)
+	var gate := _build_player_value_gate()
+	root.add_child(gate)
+	await _wait_frames(3)
+	await _capture("05_player_value_gate.png")
+
 	quit(0)
+
+func _build_player_value_gate() -> Node2D:
+	var gate := Node2D.new()
+	gate.name = "PlayerValueGate"
+
+	var band_width := float(WIDTH) / 3.0
+	var colors := [
+		Color("11141d"),
+		Color("565257"),
+		Color("80604b"),
+	]
+	var labels := ["DARK / COLD", "MID / STONE", "WARM / EARTH"]
+	var floor_y := 560.0
+
+	for i in range(3):
+		var left := band_width * i
+		var right := band_width * (i + 1)
+		var band := Polygon2D.new()
+		band.polygon = PackedVector2Array([
+			Vector2(left, 0),
+			Vector2(right, 0),
+			Vector2(right, HEIGHT),
+			Vector2(left, HEIGHT),
+		])
+		band.color = colors[i]
+		band.z_index = -10
+		gate.add_child(band)
+
+		var floor_line := Line2D.new()
+		floor_line.points = PackedVector2Array([
+			Vector2(left + 24.0, floor_y),
+			Vector2(right - 24.0, floor_y),
+		])
+		floor_line.width = 2.0
+		floor_line.default_color = Color(1.0, 1.0, 1.0, 0.34)
+		gate.add_child(floor_line)
+
+		var sprite := Sprite2D.new()
+		sprite.texture = PLAYER_PRODUCTION_CANDIDATE
+		sprite.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+		sprite.scale = Vector2(0.5, 0.5)
+		# Normalized pivot/baseline: center y=192, feet y=350 -> 158 * 0.5 = 79 px.
+		sprite.position = Vector2(left + band_width * 0.5, floor_y - 79.0)
+		sprite.z_index = 2
+		gate.add_child(sprite)
+
+		var caption := Label.new()
+		caption.text = labels[i]
+		caption.position = Vector2(left + 24.0, 34.0)
+		caption.add_theme_font_size_override("font_size", 18)
+		caption.modulate = Color(1.0, 1.0, 1.0, 0.82)
+		caption.z_index = 4
+		gate.add_child(caption)
+
+	var title := Label.new()
+	title.text = "MORTOFE — PLAYER PRODUCTION GATE V1 — 150 px visible height / 720p"
+	title.position = Vector2(24.0, HEIGHT - 48.0)
+	title.add_theme_font_size_override("font_size", 16)
+	title.modulate = Color(1.0, 1.0, 1.0, 0.72)
+	title.z_index = 4
+	gate.add_child(title)
+
+	return gate
 
 func _wait_frames(count: int) -> void:
 	for _i in range(count):
