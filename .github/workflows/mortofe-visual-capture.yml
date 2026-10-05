@@ -22,6 +22,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Prepare production art with pinned ARCONT pipeline
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 Mortofe/tools/prepare_production_art.py \
+            --project-root Mortofe \
+            --audit \
+            --report-dir /tmp/mortofe-production-art
+
       - name: Install virtual display
         shell: bash
         run: |
