@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="768" viewBox="0 0 1024 768">
+<defs>
+ <linearGradient id="armor" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#3b3a41"/><stop offset=".45" stop-color="#17171c"/><stop offset="1" stop-color="#08090c"/></linearGradient>
+ <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f0d28c"/><stop offset=".45" stop-color="#a97732"/><stop offset="1" stop-color="#493019"/></linearGradient>
+ <linearGradient id="red" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#a51f35"/><stop offset=".55" stop-color="#5d1020"/><stop offset="1" stop-color="#230812"/></linearGradient>
+ <linearGradient id="steel" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff4cf"/><stop offset=".4" stop-color="#bfc0bd"/><stop offset="1" stop-color="#5f6268"/></linearGradient>
+ <filter id="glow"><feGaussianBlur stdDeviation="2.4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+ <g id="idle">
+  <ellipse cx="128" cy="224" rx="54" ry="9" fill="#000" opacity=".35"/>
+  <path d="M83 88 Q50 112 42 176 Q73 156 93 142 L105 94Z" fill="url(#red)" stroke="#250812" stroke-width="4"/>
+  <path d="M78 98 Q52 128 58 192 Q79 170 105 151 L111 104Z" fill="#761428" opacity=".7"/>
+  <path d="M100 90 L156 90 L169 158 L150 195 L106 195 L87 156Z" fill="url(#armor)" stroke="#08090c" stroke-width="4"/>
+  <path d="M101 103 L128 94 L155 103 L148 151 L128 165 L108 151Z" fill="#202128" stroke="url(#gold)" stroke-width="3"/>
+  <path d="M111 116 L145 116 M108 134 L148 134" stroke="#b98a43" stroke-width="2" opacity=".8"/>
+  <path d="M98 102 Q78 101 73 121 L88 136 L108 118Z" fill="url(#armor)" stroke="url(#gold)" stroke-width="3"/>
+  <path d="M158 101 Q179 104 183 124 L167 139 L148 118Z" fill="url(#armor)" stroke="url(#gold)" stroke-width="3"/>
+  <path d="M110 80 Q111 51 129 43 Q148 52 147 81 L140 96 L117 96Z" fill="url(#armor)" stroke="#07080a" stroke-width="4"/>
+  <path d="M114 67 L144 67 L140 83 L116 83Z" fill="#111217" stroke="url(#gold)" stroke-width="2"/>
+  <path d="M119 73 H139" stroke="#9b2030" stroke-width="3"/>
+  <path d="M125 42 L130 29 L137 43" fill="url(#gold)"/>
+  <path d="M112 91 Q128 105 146 91" fill="none" stroke="#9d1d31" stroke-width="7"/>
+  <path d="M89 123 L72 169 L86 174 L105 134Z" fill="url(#armor)" stroke="url(#gold)" stroke-width="3"/>
+  <path d="M165 123 L177 162 L165 168 L148 135Z" fill="url(#armor)" stroke="url(#gold)" stroke-width="3"/>
+  <path d="M108 190 L91 221 L113 224 L129 194Z" fill="url(#armor)" stroke="#08090c" stroke-width="4"/>
+  <path d="M145 190 L151 223 L174 224 L157 189Z" fill="url(#armor)" stroke="#08090c" stroke-width="4"/>
+  <path d="M105 150 L128 160 L153 149 L145 201 L128 212 L109 200Z" fill="url(#red)" stroke="url(#gold)" stroke-width="2"/>
+  <circle cx="128" cy="158" r="7" fill="url(#gold)"/>
+  <path d="M165 151 L190 207" stroke="#6c4a27" stroke-width="7"/><path d="M188 207 L205 224 L197 199Z" fill="url(#steel)" stroke="#4e432f" stroke-width="2"/>
+ </g>
+ <g id="run">
+  <ellipse cx="128" cy="224" rx="61" ry="8" fill="#000" opacity=".32"/>
+  <path d="M102 98 Q54 91 34 136 Q69 132 91 151 L119 115Z" fill="url(#red)" stroke="#250812" stroke-width="4"/>
+  <path d="M103 104 L153 101 L163 154 L139 181 L99 169 L88 132Z" fill="url(#armor)" stroke="#08090c" stroke-width="4"/>
+  <path d="M113 88 Q120 59 140 55 Q156 65 153 91 L145 104 L121 103Z" fill="url(#armor)" stroke="#08090c" stroke-width="4"/>
+  <path d="M118 76 L150 77" stroke="url(#gold)" stroke-width="3"/><path d="M124 82 H146" stroke="#9d1d31" stroke-width="3"/>
+  <path d="M92 117 Q73 121 71 139 L92 149 L110 127Z" fill="url(#armor)" stroke="url(#gold)" stroke-width="3"/>
+  <path d="M154 113 Q178 114 190 129 L179 142 L147 132Z" fill="url(#armor)" stroke="url(#gold)" stroke-width="3"/>
+  <path d="M99 164 L62 207 L83 218 L124 180Z" fill="url(#armor)" stroke="#08090c" stroke-width="4"/>
+  <path d="M139 176 L157 218 L188 219 L161 174Z" fill="url(#armor)" stroke="#08090c" stroke-width="4"/>
+  <path d="M113 143 L134 151 L151 142 L143 190 L124 197 L108 179Z" fill="url(#red)" stroke="url(#gold)" stroke-width="2"/>
+  <path d="M97 125 L80 174" stroke="#5c3d23" stroke-width="7"/><path d="M80 172 L45 209" stroke="url(#steel)" stroke-width="6"/><path d="M45 209 L38 218 L52 212Z" fill="#e8dfc9"/>
+ </g>
+ <g id="jump">
+  <path d="M96 88 Q54 67 37 104 Q69 109 93 132 L118 104Z" fill="url(#red)" stroke="#250812" stroke-width="4"/>
+  <path d="M101 98 L155 98 L166 150 L143 179 L103 174 L89 132Z" fill="url(#armor)" stroke="#08090c" stroke-width="4"/>
+  <path d="M111 83 Q116 55 137 50 Q154 60 151 87 L144 101 L119 100Z" fill="url(#armor)" stroke="#08090c" stroke-width="4"/>
+  <path d="M116 72 L148 73" stroke="url(#gold)" stroke-width="3"/><path d="M121 78 H143" stroke="#a82236" stroke-width="3"/>
+  <path d="M96 118 L66 145 L77 158 L111 135Z" fill="url(#armor)" stroke="url(#gold)" stroke-width="3"/>
+  <path d="M157 115 L185 136 L175 151 L143 133Z" fill="url(#armor)" stroke="url(#gold)" stroke-width="3"/>
+  <path d="M107 170 L78 197 L91 216 L126 187Z" fill="url(#armor)" stroke="#08090c" stroke-width="4"/>
+  <path d="M140 174 L160 204 L149 224 L125 190Z" fill="url(#armor)" stroke="#08090c" stroke-width="4"/>
+  <path d="M108 143 L131 151 L151 141 L145 188 L126 197 L107 180Z" fill="url(#red)" stroke="url(#gold)" stroke-width="2"/>
+  <path d="M86 148 L57 204" stroke="url(#steel)" stroke-width="6"/><path d="M57 204 L51 217 L65 207Z" fill="#ede4cd"/>
+ </g>
+ <g id="attack">
+  <path d="M91 95 Q43 93 25 142 Q67 135 99 156 L120 112Z" fill="url(#red)" stroke="#250812" stroke-width="4"/>
+  <path d="M100 105 L151 102 L163 155 L142 184 L101 177 L86 136Z" fill="url(#armor)" stroke="#08090c" stroke-width="4"/>
+  <path d="M110 91 Q114 61 135 57 Q153 68 149 94 L143 108 L118 106Z" fill="url(#armor)" stroke="#08090c" stroke-width="4"/>
+  <path d="M91 122 L64 139 L74 154 L111 139Z" fill="url(#armor)" stroke="url(#gold)" stroke-width="3"/>
+  <path d="M151 120 L189 112 L194 128 L152 140Z" fill="url(#armor)" stroke="url(#gold)" stroke-width="3"/>
+  <path d="M100 173 L75 218 L103 222 L126 188Z" fill="url(#armor)" stroke="#08090c" stroke-width="4"/>
+  <path d="M139 180 L156 221 L184 222 L160 176Z" fill="url(#armor)" stroke="#08090c" stroke-width="4"/>
+  <path d="M182 119 L224 63" stroke="#654321" stroke-width="7"/><path d="M222 64 L239 48" stroke="url(#steel)" stroke-width="8"/><path d="M239 48 L246 39 L233 45Z" fill="#fff2cf"/>
+  <path d="M170 114 Q207 92 242 68" fill="none" stroke="#ffdca0" stroke-width="6" filter="url(#glow)" opacity=".85"/>
+  <path d="M170 115 Q213 105 247 82" fill="none" stroke="#a81f35" stroke-width="13" opacity=".32"/>
+ </g>
+ <g id="hurt">
+  <path d="M103 96 Q57 88 43 130 Q72 126 100 150 L119 111Z" fill="url(#red)" stroke="#250812" stroke-width="4"/>
+  <path d="M99 105 L151 105 L164 156 L141 185 L101 178 L86 136Z" fill="url(#armor)" stroke="#08090c" stroke-width="4"/>
+  <path d="M112 91 Q116 62 137 58 Q154 70 150 96 L143 109 L120 107Z" fill="url(#armor)" stroke="#08090c" stroke-width="4"/>
+  <path d="M91 123 L69 151 L81 162 L111 138Z" fill="url(#armor)" stroke="url(#gold)" stroke-width="3"/>
+  <path d="M150 121 L174 145 L163 158 L143 139Z" fill="url(#armor)" stroke="url(#gold)" stroke-width="3"/>
+  <path d="M100 176 L85 220 L110 222 L127 190Z" fill="url(#armor)" stroke="#08090c" stroke-width="4"/>
+  <path d="M140 180 L153 221 L176 222 L159 177Z" fill="url(#armor)" stroke="#08090c" stroke-width="4"/>
+  <path d="M157 105 L184 93 M160 116 L191 110 M157 129 L188 137" stroke="#d1263d" stroke-width="5"/>
+ </g>
+</defs>
+<g transform="translate(0 0)"><use href="#idle"/></g><g transform="translate(256 2)"><use href="#idle"/></g><g transform="translate(512 0)"><use href="#run"/></g><g transform="translate(768 2)"><use href="#run"/></g>
+<g transform="translate(0 258)"><use href="#run"/></g><g transform="translate(256 256)"><use href="#run"/></g><g transform="translate(512 256)"><use href="#jump"/></g><g transform="translate(768 246)"><use href="#jump"/></g>
+<g transform="translate(0 500)"><use href="#jump"/></g><g transform="translate(256 512)"><use href="#attack"/></g><g transform="translate(512 510)"><use href="#attack"/></g><g transform="translate(768 512)"><use href="#hurt"/></g>
+</svg>
