@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "id": "SPR_PLAYER_IDLE_001",
+  "project": "Mortofe",
+  "character": "player",
+  "animation": "idle",
+  "frame": 1,
+  "phase": "neutral",
+  "status": "planned",
+  "art_direction": {
+    "style": "dark medieval baroque",
+    "rendering": "non-pixel 2D illustrated sprite",
+    "silhouette": "strong mobile-readable full-body silhouette",
+    "palette": ["blackened steel", "deep crimson", "aged gold"],
+    "equipment": "long polearm",
+    "notes": "No procedural placeholder art. This unit is reserved for the first real production player sprite."
+  },
+  "source": {
+    "master": "master.png",
+    "master_locked_after_approval": true
+  },
+  "runtime": {
+    "normalized": "normalized.png",
+    "canvas": [384, 384],
+    "pivot": [192, 350],
+    "baseline_y": 350,
+    "target_visual_height": 300,
+    "alpha_threshold": 8
+  },
+  "review": {
+    "identity_consistency": "pending",
+    "silhouette": "pending",
+    "material_readability": "pending",
+    "mobile_scale_readability": "pending",
+    "pivot_baseline": "pending"
+  }
+}
