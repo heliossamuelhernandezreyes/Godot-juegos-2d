@@ -23,7 +23,9 @@ func receive_hitbox(hitbox: Area2D) -> void:
 		return
 	if actor.has_method("take_damage"):
 		var source_position := actor.global_position
-		if "source_actor" in hitbox and is_instance_valid(hitbox.source_actor):
-			source_position = hitbox.source_actor.global_position
-		var amount := int(hitbox.damage) if "damage" in hitbox else 1
+		var source := hitbox.get("source_actor")
+		if source is Node2D and is_instance_valid(source):
+			source_position = source.global_position
+		var amount_variant := hitbox.get("damage")
+		var amount := int(amount_variant) if amount_variant != null else 1
 		actor.take_damage(amount, source_position)
