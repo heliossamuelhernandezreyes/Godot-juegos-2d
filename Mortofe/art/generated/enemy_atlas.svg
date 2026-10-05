@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="768" viewBox="0 0 1024 768">
+<defs>
+ <linearGradient id="earmor" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#48454b"/><stop offset=".42" stop-color="#1c1b20"/><stop offset="1" stop-color="#09090c"/></linearGradient>
+ <linearGradient id="egold"><stop stop-color="#dbc07a"/><stop offset=".5" stop-color="#8d642b"/><stop offset="1" stop-color="#392511"/></linearGradient>
+ <linearGradient id="ered"><stop stop-color="#8e1d30"/><stop offset=".6" stop-color="#4c0d18"/><stop offset="1" stop-color="#1f070d"/></linearGradient>
+ <linearGradient id="esteel"><stop stop-color="#e9dfc8"/><stop offset=".42" stop-color="#999a9e"/><stop offset="1" stop-color="#44464b"/></linearGradient>
+ <filter id="eglow"><feGaussianBlur stdDeviation="2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+ <g id="eidle">
+  <ellipse cx="128" cy="225" rx="57" ry="8" fill="#000" opacity=".34"/>
+  <path d="M94 85 Q56 99 42 170 Q73 151 100 142 L112 94Z" fill="url(#ered)" stroke="#1e070d" stroke-width="4"/>
+  <path d="M99 94 L157 94 L172 157 L151 196 L105 196 L85 155Z" fill="url(#earmor)" stroke="#08090b" stroke-width="4"/>
+  <path d="M98 104 Q77 100 69 119 L84 138 L109 117Z" fill="url(#earmor)" stroke="url(#egold)" stroke-width="3"/>
+  <path d="M160 103 Q184 103 191 124 L173 142 L148 117Z" fill="url(#earmor)" stroke="url(#egold)" stroke-width="3"/>
+  <path d="M108 82 Q111 47 131 40 Q153 50 151 83 L143 99 L117 99Z" fill="url(#earmor)" stroke="#07080a" stroke-width="4"/>
+  <path d="M111 61 L148 61 L144 84 L115 84Z" fill="#111217" stroke="url(#egold)" stroke-width="2"/>
+  <path d="M117 70 H141" stroke="#a11e31" stroke-width="4"/>
+  <path d="M128 39 L132 22 L139 40" fill="url(#egold)"/>
+  <path d="M111 98 Q132 112 151 97" fill="none" stroke="#94172a" stroke-width="7"/>
+  <path d="M106 116 L128 108 L151 117 L145 156 L128 170 L110 155Z" fill="#25242a" stroke="url(#egold)" stroke-width="3"/>
+  <path d="M89 126 L69 169 L84 177 L108 136Z" fill="url(#earmor)" stroke="url(#egold)" stroke-width="3"/>
+  <path d="M168 126 L179 164 L166 171 L147 136Z" fill="url(#earmor)" stroke="url(#egold)" stroke-width="3"/>
+  <path d="M106 190 L91 223 L113 225 L129 195Z" fill="url(#earmor)" stroke="#08090b" stroke-width="4"/>
+  <path d="M147 190 L153 224 L178 225 L160 188Z" fill="url(#earmor)" stroke="#08090b" stroke-width="4"/>
+  <path d="M107 152 L129 163 L153 151 L146 203 L129 213 L108 202Z" fill="url(#ered)" stroke="url(#egold)" stroke-width="2"/>
+  <path d="M74 156 L205 213" stroke="#5d3e23" stroke-width="7"/><path d="M201 211 L223 223 L211 203Z" fill="url(#esteel)" stroke="#3e3526" stroke-width="2"/>
+ </g>
+ <g id="erun">
+  <ellipse cx="128" cy="225" rx="64" ry="8" fill="#000" opacity=".32"/>
+  <path d="M103 98 Q50 86 31 132 Q68 127 96 152 L120 115Z" fill="url(#ered)" stroke="#1e070d" stroke-width="4"/>
+  <path d="M102 105 L155 101 L167 154 L143 184 L99 174 L87 134Z" fill="url(#earmor)" stroke="#08090b" stroke-width="4"/>
+  <path d="M114 89 Q119 57 140 52 Q160 64 156 92 L147 106 L121 104Z" fill="url(#earmor)" stroke="#08090b" stroke-width="4"/>
+  <path d="M119 69 L153 70" stroke="url(#egold)" stroke-width="3"/><path d="M124 77 H148" stroke="#9d1d30" stroke-width="4"/>
+  <path d="M91 118 Q70 121 69 141 L91 150 L112 128Z" fill="url(#earmor)" stroke="url(#egold)" stroke-width="3"/>
+  <path d="M157 115 Q183 115 195 130 L181 144 L149 133Z" fill="url(#earmor)" stroke="url(#egold)" stroke-width="3"/>
+  <path d="M101 166 L61 208 L84 220 L126 180Z" fill="url(#earmor)" stroke="#08090b" stroke-width="4"/>
+  <path d="M141 177 L159 220 L192 221 L162 174Z" fill="url(#earmor)" stroke="#08090b" stroke-width="4"/>
+  <path d="M110 146 L134 154 L154 143 L146 191 L125 199 L107 181Z" fill="url(#ered)" stroke="url(#egold)" stroke-width="2"/>
+  <path d="M95 128 L50 176" stroke="#5a3a20" stroke-width="7"/><path d="M49 176 L26 196" stroke="url(#esteel)" stroke-width="7"/>
+ </g>
+ <g id="eattack">
+  <path d="M97 95 Q48 91 28 137 Q67 132 100 155 L120 111Z" fill="url(#ered)" stroke="#1e070d" stroke-width="4"/>
+  <path d="M101 105 L154 102 L166 155 L143 184 L101 176 L87 136Z" fill="url(#earmor)" stroke="#08090b" stroke-width="4"/>
+  <path d="M112 91 Q116 59 138 54 Q157 66 154 94 L146 107 L120 106Z" fill="url(#earmor)" stroke="#08090b" stroke-width="4"/>
+  <path d="M91 122 L62 142 L73 156 L112 139Z" fill="url(#earmor)" stroke="url(#egold)" stroke-width="3"/>
+  <path d="M152 120 L189 101 L198 115 L156 140Z" fill="url(#earmor)" stroke="url(#egold)" stroke-width="3"/>
+  <path d="M99 174 L73 219 L103 222 L127 188Z" fill="url(#earmor)" stroke="#08090b" stroke-width="4"/>
+  <path d="M141 180 L158 222 L188 223 L162 176Z" fill="url(#earmor)" stroke="#08090b" stroke-width="4"/>
+  <path d="M188 107 L220 50" stroke="#5d3e23" stroke-width="8"/><path d="M219 51 L241 36" stroke="url(#esteel)" stroke-width="9"/><path d="M238 35 L249 31 L242 42Z" fill="#eee3c7"/>
+  <path d="M176 111 Q212 84 247 61" fill="none" stroke="#e5c37c" stroke-width="5" filter="url(#eglow)" opacity=".8"/>
+ </g>
+ <g id="ehurt">
+  <path d="M101 98 Q56 90 43 132 Q73 128 101 151 L119 111Z" fill="url(#ered)" stroke="#1e070d" stroke-width="4"/>
+  <path d="M100 106 L152 105 L164 157 L140 186 L101 179 L87 137Z" fill="url(#earmor)" stroke="#08090b" stroke-width="4"/>
+  <path d="M113 92 Q117 62 138 58 Q156 70 152 97 L145 110 L121 108Z" fill="url(#earmor)" stroke="#08090b" stroke-width="4"/>
+  <path d="M91 124 L70 151 L82 164 L111 139Z" fill="url(#earmor)" stroke="url(#egold)" stroke-width="3"/>
+  <path d="M150 121 L176 146 L164 160 L143 139Z" fill="url(#earmor)" stroke="url(#egold)" stroke-width="3"/>
+  <path d="M101 176 L86 220 L111 223 L128 191Z" fill="url(#earmor)" stroke="#08090b" stroke-width="4"/>
+  <path d="M141 180 L154 221 L178 223 L160 177Z" fill="url(#earmor)" stroke="#08090b" stroke-width="4"/>
+  <path d="M158 106 L188 92 M160 118 L194 110 M157 131 L191 140" stroke="#d62842" stroke-width="5"/>
+ </g>
+ <g id="edead">
+  <ellipse cx="135" cy="224" rx="72" ry="8" fill="#000" opacity=".35"/>
+  <path d="M69 192 Q95 169 145 184 Q180 195 210 212 Q170 214 129 214 Q91 213 69 201Z" fill="url(#ered)" stroke="#1e070d" stroke-width="4"/>
+  <path d="M100 177 L164 185 L177 209 L112 214 L83 202Z" fill="url(#earmor)" stroke="#08090b" stroke-width="4"/>
+  <path d="M157 179 Q178 177 188 192 L181 207 L156 203Z" fill="url(#earmor)" stroke="url(#egold)" stroke-width="3"/>
+  <path d="M177 198 L229 220" stroke="#5d3e23" stroke-width="7"/><path d="M224 217 L246 224 L231 211Z" fill="url(#esteel)"/>
+ </g>
+</defs>
+<g transform="translate(0 0)"><use href="#eidle"/></g><g transform="translate(256 2)"><use href="#eidle"/></g><g transform="translate(512 0)"><use href="#erun"/></g><g transform="translate(768 2)"><use href="#erun"/></g>
+<g transform="translate(0 258)"><use href="#erun"/></g><g transform="translate(256 256)"><use href="#erun"/></g><g transform="translate(512 256)"><use href="#eattack"/></g><g transform="translate(768 256)"><use href="#eattack"/></g>
+<g transform="translate(0 512)"><use href="#eattack"/></g><g transform="translate(256 512)"><use href="#ehurt"/></g><g transform="translate(512 512)"><use href="#edead"/></g><g transform="translate(768 512)"><use href="#edead" transform="translate(2 0)"/></g>
+</svg>
