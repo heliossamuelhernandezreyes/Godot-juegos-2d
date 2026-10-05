@@ -185,17 +185,15 @@ func _update_visual() -> void:
 	if not is_instance_valid(visual):
 		return
 	var next_texture: Texture2D = PLAYER_IDLE
-	var attack_offset := 0.0
 	if attack_left > 0.0:
 		next_texture = PLAYER_ATTACK
-		attack_offset = 18.0 * float(facing)
 	elif not is_on_floor():
 		next_texture = PLAYER_JUMP
 	elif absf(velocity.x) > 24.0:
 		next_texture = PLAYER_RUN
 	visual.texture = next_texture
 	visual.flip_h = facing < 0
-	visual.position = Vector2(attack_offset, -20)
+	visual.position = Vector2(0, -20)
 	visual.modulate = Color(1.0, 0.86, 0.86) if invulnerability_left > 0.0 and int(invulnerability_left * 24.0) % 2 == 0 else Color.WHITE
 
 func _build_camera() -> void:
