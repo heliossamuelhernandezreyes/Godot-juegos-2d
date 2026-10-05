@@ -1,10 +1,13 @@
 extends Node
 
+signal report_ready(report: Dictionary)
+
 const REPORT_INTERVAL := 10.0
 const MAX_SAMPLES := 900
 
 var elapsed := 0.0
 var frame_ms: Array[float] = []
+var latest_report: Dictionary = {}
 
 func _process(delta: float) -> void:
 	if delta <= 0.0:
@@ -37,6 +40,8 @@ func _emit_report() -> void:
 		"p99_ms": _percentile(ordered, 0.99),
 		"max_ms": ordered[ordered.size() - 1]
 	}
+	latest_report = report
+	report_ready.emit(report)
 	print("MORTOFE_TELEMETRY " + JSON.stringify(report))
 
 func _percentile(values: Array[float], percentile: float) -> float:
