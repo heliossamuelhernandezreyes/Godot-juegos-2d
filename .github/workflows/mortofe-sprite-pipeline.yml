@@ -4,10 +4,14 @@ on:
   push:
     paths:
       - 'Mortofe/art/**'
+      - 'Mortofe/tools/build_player_master.py'
+      - 'Mortofe/tools/prepare_production_art.py'
       - '.github/workflows/mortofe-sprite-pipeline.yml'
   pull_request:
     paths:
       - 'Mortofe/art/**'
+      - 'Mortofe/tools/build_player_master.py'
+      - 'Mortofe/tools/prepare_production_art.py'
       - '.github/workflows/mortofe-sprite-pipeline.yml'
   workflow_dispatch:
 
@@ -27,59 +31,35 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Record source and checked-in derivative hashes
+      - name: Prepare and audit production player
         shell: bash
         run: |
           set -euo pipefail
-          SOURCE_SHA="$(sha256sum Mortofe/art/master/player/player_master_v1.png | awk '{print $1}')"
-          DERIVATIVE_SHA="$(sha256sum Mortofe/art/normalized/player/player_idle_prod_v1.png | awk '{print $1}')"
-          echo "MORTOFE_MASTER_SHA256=${SOURCE_SHA}"
-          echo "MORTOFE_DERIVATIVE_SHA256=${DERIVATIVE_SHA}"
-          echo "MORTOFE_MASTER_SHA256=${SOURCE_SHA}" >> "$GITHUB_ENV"
-          echo "MORTOFE_DERIVATIVE_SHA256=${DERIVATIVE_SHA}" >> "$GITHUB_ENV"
-
-      - name: Fetch pinned ARCONT production sprite tools
-        shell: bash
-        run: |
-          set -euo pipefail
-          ARCONT_COMMIT='3dd31bd962999f36de264c5bb364f41624ca7f0b'
-          curl -L --fail --retry 3 \
-            -o /tmp/png_sprite_normalize.py \
-            "https://raw.githubusercontent.com/heliossamuelhernandezreyes/Arcont/${ARCONT_COMMIT}/tools/png_sprite_normalize.py"
-          curl -L --fail --retry 3 \
-            -o /tmp/png_sprite_audit.py \
-            "https://raw.githubusercontent.com/heliossamuelhernandezreyes/Arcont/${ARCONT_COMMIT}/tools/png_sprite_audit.py"
-          python /tmp/png_sprite_normalize.py --help >/dev/null
-          python /tmp/png_sprite_audit.py --help >/dev/null
-
-      - name: Regenerate normalized player deterministically
-        shell: bash
-        run: |
-          set -euo pipefail
-          python /tmp/png_sprite_normalize.py \
-            Mortofe/art/normalization_plan.json \
+          rm -rf /tmp/mortofe-sprite-reports
+          python Mortofe/tools/prepare_production_art.py \
             --project-root Mortofe \
-            --report /tmp/mortofe-normalization-report.json
-          AFTER_SHA="$(sha256sum Mortofe/art/normalized/player/player_idle_prod_v1.png | awk '{print $1}')"
-          echo "MORTOFE_REGENERATED_SHA256=${AFTER_SHA}"
-          test "$AFTER_SHA" = "$MORTOFE_DERIVATIVE_SHA256"
-          git diff --exit-code -- Mortofe/art/normalized/player/player_idle_prod_v1.png
-          cat /tmp/mortofe-normalization-report.json
+            --audit \
+            --report-dir /tmp/mortofe-sprite-reports
+          MASTER_1="$(sha256sum Mortofe/art/master/player/player_master_v1.png | awk '{print $1}')"
+          NORM_1="$(sha256sum Mortofe/art/normalized/player/player_idle_prod_v1.png | awk '{print $1}')"
+          printf 'master_sha256=%s\nnormalized_sha256=%s\n' "$MASTER_1" "$NORM_1" | tee /tmp/mortofe-sprite-reports/hashes.txt
 
-      - name: Audit normalized production frame
-        shell: bash
-        run: |
-          set -euo pipefail
-          python /tmp/png_sprite_audit.py \
-            Mortofe/art/production_sprite_manifest.json \
-            --project-root Mortofe | tee /tmp/mortofe-sprite-audit.json
+          # Consumer-level determinism check: rebuilding from the same recipe and pinned
+          # ARCONT commit must produce byte-identical master and normalized derivative.
+          python Mortofe/tools/prepare_production_art.py \
+            --project-root Mortofe \
+            --audit \
+            --report-dir /tmp/mortofe-sprite-reports/repeat
+          MASTER_2="$(sha256sum Mortofe/art/master/player/player_master_v1.png | awk '{print $1}')"
+          NORM_2="$(sha256sum Mortofe/art/normalized/player/player_idle_prod_v1.png | awk '{print $1}')"
+          test "$MASTER_1" = "$MASTER_2"
+          test "$NORM_1" = "$NORM_2"
+          echo "deterministic=true" | tee -a /tmp/mortofe-sprite-reports/hashes.txt
 
       - name: Upload production sprite reports
         uses: actions/upload-artifact@v4
         with:
           name: Mortofe-production-sprite-reports
-          path: |
-            /tmp/mortofe-normalization-report.json
-            /tmp/mortofe-sprite-audit.json
+          path: /tmp/mortofe-sprite-reports/**
           if-no-files-found: error
           retention-days: 14
