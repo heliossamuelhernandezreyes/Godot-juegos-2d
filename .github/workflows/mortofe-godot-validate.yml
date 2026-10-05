@@ -1,0 +1,47 @@
+name: Mortofe Godot validation
+
+on:
+  push:
+    paths:
+      - 'Mortofe/**'
+      - '.github/workflows/mortofe-godot-validate.yml'
+  pull_request:
+    paths:
+      - 'Mortofe/**'
+      - '.github/workflows/mortofe-godot-validate.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Fetch pinned Godot 4.7.2
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -L --fail --retry 3 \
+            -o godot.zip \
+            https://github.com/godotengine/godot/releases/download/4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64.zip
+          echo 'cadd3204e728a35d3f13adb7fd0d7902636b79f6b95c40c265eb73b6c35329e4  godot.zip' | sha256sum -c -
+          unzip -q godot.zip
+          mv Godot_v4.7.2-stable_linux.x86_64 godot
+          chmod +x godot
+          ./godot --version
+
+      - name: Import and parse project
+        shell: bash
+        run: |
+          set -euo pipefail
+          ./godot --headless --path Mortofe --editor --quit
+
+      - name: Smoke run
+        shell: bash
+        run: |
+          set -euo pipefail
+          ./godot --headless --path Mortofe --quit-after 5
