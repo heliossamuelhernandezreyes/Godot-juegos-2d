@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "candidate": "player-production-v1",
+  "status": "mechanical-gate-pending-ci",
+  "arcont_commit": "3dd31bd962999f36de264c5bb364f41624ca7f0b",
+  "master": {
+    "path": "res://art/master/player/player_master_v1.png",
+    "sha256": "507573173e3015de0c1a4d2d69bbe20a804de17090003810dec15d381868856e",
+    "size": [1024, 1024],
+    "alpha_bbox_threshold_8": [271, 48, 833, 968]
+  },
+  "normalized": {
+    "path": "res://art/normalized/player/player_idle_prod_v1.png",
+    "sha256": "23e0f523fe7023fd89f07f1047d9defd16616d878f94235ec438328e69b1f239",
+    "canvas": [384, 384],
+    "pivot": [192, 350],
+    "baseline_y": 350,
+    "target_visual_height": 300,
+    "output_alpha_bbox": [114, 51, 297, 350],
+    "content_sha256": "6e1020b648e1079de959206a7207a8ff6c4b90778dc6f20c493a6803463f68f8"
+  },
+  "runtime_gate": {
+    "scale": 0.5,
+    "expected_visible_height_px": 150,
+    "logical_viewport_height_px": 720,
+    "expected_screen_height_pct": 20.8333,
+    "notes": "One normalized pose is intentionally reused across runtime states for the first silhouette/pivot/readability gate; this is not an animation-quality approval."
+  }
+}
