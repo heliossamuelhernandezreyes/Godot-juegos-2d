@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "project": "Mortofe",
+  "art_direction": "dark-medieval-baroque",
+  "runtime_profile": "mobile-non-pixel-art",
+  "characters": {
+    "player": {
+      "canvas": [96, 128],
+      "anchor": "feet",
+      "baseline_y": 112,
+      "states": {
+        "idle": "res://art/characters/player/player_idle.svg",
+        "run": "res://art/characters/player/player_run.svg",
+        "jump": "res://art/characters/player/player_jump.svg",
+        "attack": "res://art/characters/player/player_attack.svg"
+      }
+    },
+    "penitent_guard": {
+      "canvas": [96, 128],
+      "anchor": "feet",
+      "baseline_y": 115,
+      "states": {
+        "idle": "res://art/characters/enemy/enemy_idle.svg",
+        "attack": "res://art/characters/enemy/enemy_attack.svg",
+        "hurt": "res://art/characters/enemy/enemy_hurt.svg"
+      }
+    }
+  }
+}
