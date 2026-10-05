@@ -1,0 +1,94 @@
+{
+  "schema_version": 1,
+  "project": "Mortofe",
+  "profile": "mobile-hd-baroque",
+  "display": {
+    "logical_size": [1280, 720],
+    "orientation": "landscape",
+    "stretch_mode": "canvas_items",
+    "stretch_aspect": "expand"
+  },
+  "runtime": {
+    "format": "png-alpha",
+    "color_space": "srgb",
+    "pixel_art": false,
+    "filtering": "linear",
+    "mipmaps": "benchmark-before-enable",
+    "android_texture_compatibility": ["ETC2", "ASTC"],
+    "initial_atlas_page_max": [2048, 2048],
+    "larger_atlas_requires_device_benchmark": true
+  },
+  "player": {
+    "master_frame_canvas": [384, 384],
+    "runtime_target_visual_height_at_720p": [130, 160],
+    "anchor": "feet",
+    "baseline_y": 350,
+    "facing_source": "right",
+    "allow_runtime_flip": true,
+    "trim_policy": "preserve-semantic-anchor",
+    "required_states_vertical_slice": {
+      "idle": {"frames": [6, 8], "fps": [8, 12]},
+      "run": {"frames": [8, 10], "fps": [12, 16]},
+      "jump_start": {"frames": [2, 3], "fps": [10, 14]},
+      "jump_rise": {"frames": [1, 2], "fps": [8, 12]},
+      "fall": {"frames": [1, 2], "fps": [8, 12]},
+      "double_jump": {"frames": [3, 5], "fps": [12, 16]},
+      "land": {"frames": [2, 3], "fps": [10, 14]},
+      "dash": {"frames": [4, 6], "fps": [16, 24]},
+      "attack_1": {"frames": [6, 8], "fps": [14, 20]},
+      "hurt": {"frames": [2, 3], "fps": [10, 14]},
+      "death": {"frames": [6, 10], "fps": [8, 12]}
+    },
+    "silhouette_requirements": [
+      "unique_head_or_helmet",
+      "readable_primary_weapon",
+      "large_secondary_cloak_or_mantle_shape",
+      "clear_feet_contact",
+      "no_microdetail_dependency"
+    ]
+  },
+  "common_enemy": {
+    "master_frame_canvas": [320, 320],
+    "runtime_target_visual_height_at_720p": [115, 150],
+    "anchor": "feet",
+    "baseline_y": 292,
+    "facing_source": "left",
+    "allow_runtime_flip": true,
+    "required_states_vertical_slice": {
+      "idle": {"frames": [4, 6], "fps": [7, 10]},
+      "run": {"frames": [6, 8], "fps": [10, 14]},
+      "attack": {"frames": [5, 7], "fps": [12, 18]},
+      "hurt": {"frames": [2, 3], "fps": [10, 14]},
+      "death": {"frames": [5, 8], "fps": [8, 12]}
+    }
+  },
+  "quality_gates": {
+    "baseline_drift_px_max": 2,
+    "pivot_drift_px_max": 2,
+    "visual_height_drift_percent_max": 4,
+    "costume_identity_drift": "fail",
+    "weapon_geometry_drift": "fail",
+    "unexpected_camera_angle_change": "fail",
+    "transparent_padding_warning_percent": 45,
+    "mobile_readability_test": true,
+    "three_background_value_test": true,
+    "hud_overlap_test": true,
+    "android_memory_benchmark_before_full_cast": true
+  },
+  "production_order": [
+    "player_reference_pose",
+    "player_three_readability_poses",
+    "player_in_game_scale_test",
+    "player_core_animation_set",
+    "common_enemy_reference_pose",
+    "common_enemy_core_animation_set",
+    "combat_vfx",
+    "environment_modules",
+    "hud_art"
+  ],
+  "placeholder_policy": {
+    "current_svg_assets_are_final": false,
+    "may_remain_for_debug": true,
+    "must_not_define_final_style": true
+  }
+}
