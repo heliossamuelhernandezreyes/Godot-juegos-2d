@@ -2,6 +2,7 @@ extends CharacterBody2D
 
 signal health_changed(value: int)
 signal died
+signal jumped(stage: int)
 
 const Hitbox2D = preload("res://scripts/combat/hitbox_2d.gd")
 const Hurtbox2D = preload("res://scripts/combat/hurtbox_2d.gd")
@@ -11,12 +12,15 @@ const Hurtbox2D = preload("res://scripts/combat/hurtbox_2d.gd")
 @export var air_accel := 1050.0
 @export var friction := 2400.0
 @export var jump_velocity := -590.0
+@export var double_jump_velocity := -555.0
+@export var max_jumps := 2
 @export var dash_speed := 760.0
 @export var dash_duration := 0.12
 @export var dash_cooldown_duration := 0.34
 
 var health := 5
 var facing := 1
+var jumps_used := 0
 var coyote_left := 0.0
 var jump_buffer_left := 0.0
 var dash_left := 0.0
@@ -41,8 +45,13 @@ func _physics_process(delta: float) -> void:
 
 	if is_on_floor():
 		coyote_left = 0.11
+		jumps_used = 0
 	else:
 		coyote_left = maxf(0.0, coyote_left - delta)
+		# Walking off a ledge consumes the ground jump once coyote time expires,
+		# leaving exactly one real air jump instead of two mid-air jumps.
+		if coyote_left <= 0.0 and jumps_used == 0:
+			jumps_used = 1
 
 	if Input.is_action_just_pressed("jump"):
 		jump_buffer_left = 0.12
@@ -78,13 +87,30 @@ func _apply_movement(delta: float) -> void:
 		var decel := friction if is_on_floor() else air_accel * 0.35
 		velocity.x = move_toward(velocity.x, 0.0, decel * delta)
 
-	if jump_buffer_left > 0.0 and coyote_left > 0.0:
-		velocity.y = jump_velocity
-		jump_buffer_left = 0.0
-		coyote_left = 0.0
+	_try_consume_jump_buffer()
 
+	# Variable-height jump remains active for both first and second jump.
 	if Input.is_action_just_released("jump") and velocity.y < -180.0:
 		velocity.y *= 0.48
+
+func _try_consume_jump_buffer() -> void:
+	if jump_buffer_left <= 0.0:
+		return
+
+	var can_ground_jump := is_on_floor() or (coyote_left > 0.0 and jumps_used == 0)
+	if can_ground_jump:
+		_perform_jump(1)
+		return
+
+	if not is_on_floor() and jumps_used < max_jumps:
+		_perform_jump(jumps_used + 1)
+
+func _perform_jump(stage: int) -> void:
+	jumps_used = clampi(stage, 1, max_jumps)
+	velocity.y = jump_velocity if jumps_used == 1 else double_jump_velocity
+	jump_buffer_left = 0.0
+	coyote_left = 0.0
+	jumped.emit(jumps_used)
 
 func _start_dash() -> void:
 	dash_left = dash_duration
@@ -106,9 +132,9 @@ func _update_timers(delta: float) -> void:
 	attack_left = maxf(0.0, attack_left - delta)
 	invulnerability_left = maxf(0.0, invulnerability_left - delta)
 
-func take_damage(amount: int, source_position: Vector2) -> void:
+func take_damage(amount: int, source_position: Vector2) -> bool:
 	if invulnerability_left > 0.0 or dash_left > 0.0:
-		return
+		return false
 	health = maxi(0, health - amount)
 	invulnerability_left = 0.55
 	var away := signf(global_position.x - source_position.x)
@@ -121,6 +147,7 @@ func take_damage(amount: int, source_position: Vector2) -> void:
 		health = 5
 		global_position = Vector2(260, 560)
 		velocity = Vector2.ZERO
+	return true
 
 func _build_collision() -> void:
 	var collision := CollisionShape2D.new()
