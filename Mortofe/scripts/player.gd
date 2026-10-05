@@ -3,6 +3,9 @@ extends CharacterBody2D
 signal health_changed(value: int)
 signal died
 
+const Hitbox2D = preload("res://scripts/combat/hitbox_2d.gd")
+const Hurtbox2D = preload("res://scripts/combat/hurtbox_2d.gd")
+
 @export var move_speed := 285.0
 @export var ground_accel := 1900.0
 @export var air_accel := 1050.0
@@ -22,14 +25,14 @@ var attack_left := 0.0
 var invulnerability_left := 0.0
 var gravity := float(ProjectSettings.get_setting("physics/2d/default_gravity", 980.0))
 
-var attack_area: Area2D
-var attack_shape: CollisionShape2D
+var attack_hitbox: Area2D
 
 func _ready() -> void:
 	collision_layer = 2
 	collision_mask = 1
 	_build_collision()
-	_build_attack_area()
+	_build_hurtbox()
+	_build_attack_hitbox()
 	_build_camera()
 	queue_redraw()
 
@@ -57,7 +60,8 @@ func _physics_process(delta: float) -> void:
 	else:
 		_apply_movement(delta)
 
-	attack_area.position.x = 44.0 * float(facing)
+	if is_instance_valid(attack_hitbox):
+		attack_hitbox.position.x = 44.0 * float(facing)
 	move_and_slide()
 	queue_redraw()
 
@@ -88,12 +92,13 @@ func _start_dash() -> void:
 
 func _start_attack() -> void:
 	attack_left = 0.16
-	attack_shape.set_deferred("disabled", false)
+	if is_instance_valid(attack_hitbox):
+		attack_hitbox.begin_window()
 	get_tree().create_timer(0.11).timeout.connect(_finish_attack_window)
 
 func _finish_attack_window() -> void:
-	if is_instance_valid(attack_shape):
-		attack_shape.set_deferred("disabled", true)
+	if is_instance_valid(attack_hitbox):
+		attack_hitbox.end_window()
 
 func _update_timers(delta: float) -> void:
 	dash_left = maxf(0.0, dash_left - delta)
@@ -117,12 +122,6 @@ func take_damage(amount: int, source_position: Vector2) -> void:
 		global_position = Vector2(260, 560)
 		velocity = Vector2.ZERO
 
-func _on_attack_body_entered(body: Node) -> void:
-	if attack_left <= 0.0:
-		return
-	if body.has_method("take_damage"):
-		body.take_damage(1, global_position)
-
 func _build_collision() -> void:
 	var collision := CollisionShape2D.new()
 	var capsule := CapsuleShape2D.new()
@@ -131,20 +130,20 @@ func _build_collision() -> void:
 	collision.shape = capsule
 	add_child(collision)
 
-func _build_attack_area() -> void:
-	attack_area = Area2D.new()
-	attack_area.collision_layer = 8
-	attack_area.collision_mask = 4
-	attack_area.monitoring = true
-	attack_area.monitorable = false
-	attack_shape = CollisionShape2D.new()
+func _build_hurtbox() -> void:
+	var hurtbox := Hurtbox2D.new()
+	var capsule := CapsuleShape2D.new()
+	capsule.radius = 17.0
+	capsule.height = 56.0
+	hurtbox.configure(self, 32, capsule)
+	add_child(hurtbox)
+
+func _build_attack_hitbox() -> void:
+	attack_hitbox = Hitbox2D.new()
 	var rect := RectangleShape2D.new()
 	rect.size = Vector2(72, 54)
-	attack_shape.shape = rect
-	attack_shape.disabled = true
-	attack_area.add_child(attack_shape)
-	attack_area.body_entered.connect(_on_attack_body_entered)
-	add_child(attack_area)
+	attack_hitbox.configure(self, 1, 64, rect)
+	add_child(attack_hitbox)
 
 func _build_camera() -> void:
 	var camera := Camera2D.new()
