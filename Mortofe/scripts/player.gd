@@ -6,6 +6,10 @@ signal jumped(stage: int)
 
 const Hitbox2D = preload("res://scripts/combat/hitbox_2d.gd")
 const Hurtbox2D = preload("res://scripts/combat/hurtbox_2d.gd")
+const PLAYER_IDLE = preload("res://art/characters/player/player_idle.svg")
+const PLAYER_RUN = preload("res://art/characters/player/player_run.svg")
+const PLAYER_JUMP = preload("res://art/characters/player/player_jump.svg")
+const PLAYER_ATTACK = preload("res://art/characters/player/player_attack.svg")
 
 @export var move_speed := 285.0
 @export var ground_accel := 1900.0
@@ -30,6 +34,7 @@ var invulnerability_left := 0.0
 var gravity := float(ProjectSettings.get_setting("physics/2d/default_gravity", 980.0))
 
 var attack_hitbox: Area2D
+var visual: Sprite2D
 
 func _ready() -> void:
 	collision_layer = 2
@@ -37,6 +42,7 @@ func _ready() -> void:
 	_build_collision()
 	_build_hurtbox()
 	_build_attack_hitbox()
+	_build_visual()
 	_build_camera()
 	queue_redraw()
 
@@ -48,8 +54,6 @@ func _physics_process(delta: float) -> void:
 		jumps_used = 0
 	else:
 		coyote_left = maxf(0.0, coyote_left - delta)
-		# Walking off a ledge consumes the ground jump once coyote time expires,
-		# leaving exactly one real air jump instead of two mid-air jumps.
 		if coyote_left <= 0.0 and jumps_used == 0:
 			jumps_used = 1
 
@@ -72,6 +76,7 @@ func _physics_process(delta: float) -> void:
 	if is_instance_valid(attack_hitbox):
 		attack_hitbox.position.x = 44.0 * float(facing)
 	move_and_slide()
+	_update_visual()
 	queue_redraw()
 
 func _apply_movement(delta: float) -> void:
@@ -88,20 +93,16 @@ func _apply_movement(delta: float) -> void:
 		velocity.x = move_toward(velocity.x, 0.0, decel * delta)
 
 	_try_consume_jump_buffer()
-
-	# Variable-height jump remains active for both first and second jump.
 	if Input.is_action_just_released("jump") and velocity.y < -180.0:
 		velocity.y *= 0.48
 
 func _try_consume_jump_buffer() -> void:
 	if jump_buffer_left <= 0.0:
 		return
-
 	var can_ground_jump := is_on_floor() or (coyote_left > 0.0 and jumps_used == 0)
 	if can_ground_jump:
 		_perform_jump(1)
 		return
-
 	if not is_on_floor() and jumps_used < max_jumps:
 		_perform_jump(jumps_used + 1)
 
@@ -172,6 +173,31 @@ func _build_attack_hitbox() -> void:
 	attack_hitbox.configure(self, 1, 64, rect)
 	add_child(attack_hitbox)
 
+func _build_visual() -> void:
+	visual = Sprite2D.new()
+	visual.texture = PLAYER_IDLE
+	visual.position = Vector2(0, -20)
+	visual.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+	visual.z_index = 2
+	add_child(visual)
+
+func _update_visual() -> void:
+	if not is_instance_valid(visual):
+		return
+	var next_texture: Texture2D = PLAYER_IDLE
+	var attack_offset := 0.0
+	if attack_left > 0.0:
+		next_texture = PLAYER_ATTACK
+		attack_offset = 18.0 * float(facing)
+	elif not is_on_floor():
+		next_texture = PLAYER_JUMP
+	elif absf(velocity.x) > 24.0:
+		next_texture = PLAYER_RUN
+	visual.texture = next_texture
+	visual.flip_h = facing < 0
+	visual.position = Vector2(attack_offset, -20)
+	visual.modulate = Color(1.0, 0.86, 0.86) if invulnerability_left > 0.0 and int(invulnerability_left * 24.0) % 2 == 0 else Color.WHITE
+
 func _build_camera() -> void:
 	var camera := Camera2D.new()
 	camera.position = Vector2(0, -70)
@@ -184,25 +210,8 @@ func _build_camera() -> void:
 	add_child(camera)
 
 func _draw() -> void:
-	var dir := float(facing)
-	var flash := invulnerability_left > 0.0 and int(invulnerability_left * 20.0) % 2 == 0
-	var cloth := Color("c9bcc0") if flash else Color("4e1820")
-	var metal := Color("d0b98f") if flash else Color("756351")
-
-	# Dark baroque placeholder silhouette. Final sprite art replaces this later.
-	draw_polygon(PackedVector2Array([
-		Vector2(-17.0 * dir, -14),
-		Vector2(-26.0 * dir, 28),
-		Vector2(0, 23),
-		Vector2(25.0 * dir, 30),
-		Vector2(16.0 * dir, -13)
-	]), PackedColorArray([cloth]))
-	draw_circle(Vector2(0, -28), 13.0, Color("1a171b"))
-	draw_arc(Vector2(0, -28), 14.5, PI, TAU, 14, metal, 3.0)
-	draw_line(Vector2(8.0 * dir, -5), Vector2(28.0 * dir, 22), metal, 5.0)
-
+	if jumps_used >= 2 and not is_on_floor():
+		draw_arc(Vector2(0, 24), 24.0, 0.0, TAU, 30, Color(0.75, 0.55, 0.34, 0.42), 2.0)
 	if attack_left > 0.0:
-		draw_line(Vector2(16.0 * dir, -4), Vector2(73.0 * dir, -22), Color("d8c9ad"), 5.0)
-		draw_arc(Vector2(19.0 * dir, -3), 60.0, -0.65 if facing > 0 else PI - 0.65, 0.55 if facing > 0 else PI + 0.55, 18, Color(0.75, 0.18, 0.16, 0.65), 4.0)
-	else:
-		draw_line(Vector2(16.0 * dir, 7), Vector2(42.0 * dir, 35), Color("bfb39d"), 4.0)
+		var dir := float(facing)
+		draw_arc(Vector2(20.0 * dir, -4), 64.0, -0.65 if facing > 0 else PI - 0.65, 0.55 if facing > 0 else PI + 0.55, 18, Color(0.75, 0.18, 0.16, 0.55), 4.0)
