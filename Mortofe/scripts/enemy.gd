@@ -1,6 +1,7 @@
 extends CharacterBody2D
 
 signal died
+signal damaged(amount: int, remaining_health: int, world_position: Vector2)
 
 const Hitbox2D = preload("res://scripts/combat/hitbox_2d.gd")
 const Hurtbox2D = preload("res://scripts/combat/hurtbox_2d.gd")
@@ -15,6 +16,7 @@ var health := 3
 var attack_cooldown_left := 0.0
 var attack_window_left := 0.0
 var hurt_flash_left := 0.0
+var hit_stun_left := 0.0
 var facing := -1
 var gravity := float(ProjectSettings.get_setting("physics/2d/default_gravity", 980.0))
 var attack_hitbox: Area2D
@@ -32,10 +34,22 @@ func _physics_process(delta: float) -> void:
 	attack_cooldown_left = maxf(0.0, attack_cooldown_left - delta)
 	attack_window_left = maxf(0.0, attack_window_left - delta)
 	hurt_flash_left = maxf(0.0, hurt_flash_left - delta)
+	hit_stun_left = maxf(0.0, hit_stun_left - delta)
 
 	if not is_on_floor():
 		velocity.y += gravity * delta
 
+	if hit_stun_left > 0.0:
+		velocity.x = move_toward(velocity.x, 0.0, 420.0 * delta)
+	else:
+		_update_ai(delta)
+
+	if is_instance_valid(attack_hitbox):
+		attack_hitbox.position.x = 36.0 * float(facing)
+	move_and_slide()
+	queue_redraw()
+
+func _update_ai(delta: float) -> void:
 	if is_instance_valid(target):
 		var dx := target.global_position.x - global_position.x
 		var distance := absf(dx)
@@ -51,11 +65,6 @@ func _physics_process(delta: float) -> void:
 	else:
 		velocity.x = move_toward(velocity.x, 0.0, 700.0 * delta)
 
-	if is_instance_valid(attack_hitbox):
-		attack_hitbox.position.x = 36.0 * float(facing)
-	move_and_slide()
-	queue_redraw()
-
 func _try_attack(distance: float) -> void:
 	if distance > attack_distance or attack_cooldown_left > 0.0:
 		return
@@ -69,16 +78,25 @@ func _finish_attack_window() -> void:
 	if is_instance_valid(attack_hitbox):
 		attack_hitbox.end_window()
 
-func take_damage(amount: int, source_position: Vector2) -> void:
-	health -= amount
-	hurt_flash_left = 0.12
+func take_damage(amount: int, source_position: Vector2) -> bool:
+	if amount <= 0 or health <= 0:
+		return false
+	health = maxi(0, health - amount)
+	hurt_flash_left = 0.18
+	hit_stun_left = 0.14
+	attack_window_left = 0.0
+	if is_instance_valid(attack_hitbox):
+		attack_hitbox.end_window()
 	var away := signf(global_position.x - source_position.x)
 	if away == 0.0:
 		away = float(facing)
-	velocity = Vector2(away * 250.0, -170.0)
+	velocity = Vector2(away * 285.0, -190.0)
+	damaged.emit(amount, health, global_position)
+	queue_redraw()
 	if health <= 0:
 		died.emit()
 		queue_free()
+	return true
 
 func _build_collision() -> void:
 	var collision := CollisionShape2D.new()
@@ -106,27 +124,19 @@ func _build_attack_hitbox() -> void:
 func _draw() -> void:
 	var dir := float(facing)
 	var flash := hurt_flash_left > 0.0
-	var robe := Color("c8b7aa") if flash else Color("252027")
-	var accent := Color("e2d0b2") if flash else Color("7a302f")
-	var iron := Color("b7aa95") if flash else Color("5f5959")
-
-	# Placeholder: a fallen baroque guard/penitent silhouette.
+	var robe := Color("f1dfd0") if flash else Color("252027")
+	var accent := Color("ffccb0") if flash else Color("7a302f")
+	var iron := Color("e3d7c7") if flash else Color("5f5959")
 	draw_polygon(PackedVector2Array([
-		Vector2(-18.0 * dir, -12),
-		Vector2(-24.0 * dir, 26),
-		Vector2(0, 31),
-		Vector2(22.0 * dir, 24),
-		Vector2(17.0 * dir, -11)
+		Vector2(-18.0 * dir, -12), Vector2(-24.0 * dir, 26), Vector2(0, 31),
+		Vector2(22.0 * dir, 24), Vector2(17.0 * dir, -11)
 	]), PackedColorArray([robe]))
 	draw_circle(Vector2(0, -27), 12.0, Color("151318"))
 	draw_line(Vector2(-8.0 * dir, -33), Vector2(8.0 * dir, -20), accent, 3.0)
 	draw_line(Vector2(11.0 * dir, -2), Vector2(38.0 * dir, 19), iron, 5.0)
 	draw_circle(Vector2(40.0 * dir, 21), 7.0, accent)
-
 	if attack_window_left > 0.0:
 		draw_arc(Vector2(16.0 * dir, 2), 48.0, -0.5 if facing > 0 else PI - 0.5, 0.45 if facing > 0 else PI + 0.45, 14, Color(0.72, 0.15, 0.13, 0.58), 4.0)
-
-	# Tiny health marks are intentionally debug-like for the first slice.
 	for i in range(max_health):
 		var c := accent if i < health else Color("2b292c")
 		draw_rect(Rect2(-18 + i * 13, -52, 9, 3), c, true)
