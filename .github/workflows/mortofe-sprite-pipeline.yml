@@ -1,0 +1,79 @@
+name: Mortofe production sprite pipeline
+
+on:
+  push:
+    paths:
+      - 'Mortofe/art/**'
+      - '.github/workflows/mortofe-sprite-pipeline.yml'
+  pull_request:
+    paths:
+      - 'Mortofe/art/**'
+      - '.github/workflows/mortofe-sprite-pipeline.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  production-sprite-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Verify source and checked-in derivative hashes
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo '507573173e3015de0c1a4d2d69bbe20a804de17090003810dec15d381868856e  Mortofe/art/master/player/player_master_v1.png' | sha256sum -c -
+          echo '23e0f523fe7023fd89f07f1047d9defd16616d878f94235ec438328e69b1f239  Mortofe/art/normalized/player/player_idle_prod_v1.png' | sha256sum -c -
+
+      - name: Fetch pinned ARCONT production sprite tools
+        shell: bash
+        run: |
+          set -euo pipefail
+          ARCONT_COMMIT='3dd31bd962999f36de264c5bb364f41624ca7f0b'
+          curl -L --fail --retry 3 \
+            -o /tmp/png_sprite_normalize.py \
+            "https://raw.githubusercontent.com/heliossamuelhernandezreyes/Arcont/${ARCONT_COMMIT}/tools/png_sprite_normalize.py"
+          curl -L --fail --retry 3 \
+            -o /tmp/png_sprite_audit.py \
+            "https://raw.githubusercontent.com/heliossamuelhernandezreyes/Arcont/${ARCONT_COMMIT}/tools/png_sprite_audit.py"
+          python /tmp/png_sprite_normalize.py --help >/dev/null
+          python /tmp/png_sprite_audit.py --help >/dev/null
+
+      - name: Regenerate normalized player deterministically
+        shell: bash
+        run: |
+          set -euo pipefail
+          python /tmp/png_sprite_normalize.py \
+            Mortofe/art/normalization_plan.json \
+            --project-root Mortofe \
+            --report /tmp/mortofe-normalization-report.json
+          echo '23e0f523fe7023fd89f07f1047d9defd16616d878f94235ec438328e69b1f239  Mortofe/art/normalized/player/player_idle_prod_v1.png' | sha256sum -c -
+          git diff --exit-code -- Mortofe/art/normalized/player/player_idle_prod_v1.png
+          cat /tmp/mortofe-normalization-report.json
+
+      - name: Audit normalized production frame
+        shell: bash
+        run: |
+          set -euo pipefail
+          python /tmp/png_sprite_audit.py \
+            Mortofe/art/production_sprite_manifest.json \
+            --project-root Mortofe | tee /tmp/mortofe-sprite-audit.json
+
+      - name: Upload production sprite reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: Mortofe-production-sprite-reports
+          path: |
+            /tmp/mortofe-normalization-report.json
+            /tmp/mortofe-sprite-audit.json
+          if-no-files-found: error
+          retention-days: 14
