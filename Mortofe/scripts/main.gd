@@ -4,6 +4,7 @@ const PlayerController = preload("res://scripts/player.gd")
 const EnemyController = preload("res://scripts/enemy.gd")
 const MobileControls = preload("res://scripts/mobile_controls.gd")
 const MobileTelemetry = preload("res://scripts/mobile_telemetry.gd")
+const MovingPlatform = preload("res://scripts/moving_platform.gd")
 
 var player: CharacterBody2D
 var hud_status: Label
@@ -59,6 +60,16 @@ func _draw() -> void:
 	_draw_platform(Rect2(1580, 490, 310, 24))
 	_draw_platform(Rect2(1730, 440, 210, 24))
 
+	# Locomotion benchmark section: one-way ledge + slope.
+	draw_rect(Rect2(2050, 520, 250, 18), Color(0.25, 0.21, 0.23, 0.85), true)
+	draw_line(Vector2(2050, 520), Vector2(2300, 520), Color("a88762"), 3.0)
+	draw_polygon(PackedVector2Array([
+		Vector2(2320, 650),
+		Vector2(2640, 650),
+		Vector2(2640, 530)
+	]), PackedColorArray([Color("292329")]))
+	draw_line(Vector2(2320, 650), Vector2(2640, 530), Color("8c7053"), 4.0)
+
 	# Foreground columns hint at the intended monumental/baroque scale.
 	for x in [80.0, 1480.0, 2260.0]:
 		draw_rect(Rect2(x, 220, 54, 430), Color("242027"), true)
@@ -75,6 +86,9 @@ func _build_collision_world() -> void:
 	_add_static_rect(Vector2(1155, 482), Vector2(230, 24))
 	_add_static_rect(Vector2(1735, 502), Vector2(310, 24))
 	_add_static_rect(Vector2(1835, 452), Vector2(210, 24))
+	_add_one_way_rect(Vector2(2175, 529), Vector2(250, 18))
+	_add_slope(Vector2(2480, 590))
+	_add_moving_platform(Vector2(2760, 520), Vector2(180, 20))
 
 func _add_static_rect(pos: Vector2, size: Vector2) -> void:
 	var body := StaticBody2D.new()
@@ -86,6 +100,60 @@ func _add_static_rect(pos: Vector2, size: Vector2) -> void:
 	shape.size = size
 	shape_node.shape = shape
 	body.add_child(shape_node)
+	add_child(body)
+
+func _add_one_way_rect(pos: Vector2, size: Vector2) -> void:
+	var body := StaticBody2D.new()
+	body.position = pos
+	body.collision_layer = 1
+	body.collision_mask = 0
+	var shape_node := CollisionShape2D.new()
+	var shape := RectangleShape2D.new()
+	shape.size = size
+	shape_node.shape = shape
+	shape_node.one_way_collision = true
+	shape_node.one_way_collision_margin = 8.0
+	body.add_child(shape_node)
+	add_child(body)
+
+func _add_slope(pos: Vector2) -> void:
+	var body := StaticBody2D.new()
+	body.position = pos
+	body.collision_layer = 1
+	body.collision_mask = 0
+	var shape_node := CollisionShape2D.new()
+	var shape := ConvexPolygonShape2D.new()
+	shape.points = PackedVector2Array([
+		Vector2(-160, 60),
+		Vector2(160, 60),
+		Vector2(160, -60)
+	])
+	shape_node.shape = shape
+	body.add_child(shape_node)
+	add_child(body)
+
+func _add_moving_platform(pos: Vector2, size: Vector2) -> void:
+	var body := MovingPlatform.new()
+	body.position = pos
+	body.collision_layer = 1
+	body.collision_mask = 0
+	body.travel = Vector2(220, 0)
+	body.cycle_seconds = 3.2
+	var shape_node := CollisionShape2D.new()
+	var shape := RectangleShape2D.new()
+	shape.size = size
+	shape_node.shape = shape
+	body.add_child(shape_node)
+	var visual := Polygon2D.new()
+	var half := size * 0.5
+	visual.polygon = PackedVector2Array([
+		Vector2(-half.x, -half.y),
+		Vector2(half.x, -half.y),
+		Vector2(half.x, half.y),
+		Vector2(-half.x, half.y)
+	])
+	visual.color = Color("46373d")
+	body.add_child(visual)
 	add_child(body)
 
 func _spawn_player() -> void:
