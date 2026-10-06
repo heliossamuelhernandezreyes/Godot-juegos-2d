@@ -66,4 +66,9 @@ jobs:
             exit 0
           fi
           git commit -m 'art(mortofe): materialize production sprite units'
+          # The branch may advance while this run is working (for example, a
+          # catalog-only commit made seconds after metadata changes). Rebase the
+          # generated commit onto the newest remote head before pushing instead
+          # of failing with a non-fast-forward update.
+          git pull --rebase origin "${GITHUB_REF_NAME}"
           git push origin "HEAD:${GITHUB_REF_NAME}"
