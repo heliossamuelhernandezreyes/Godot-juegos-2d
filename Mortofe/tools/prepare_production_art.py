@@ -34,10 +34,25 @@ def main() -> int:
     project_root = args.project_root.resolve()
     repo_root = project_root.parent
     generator = project_root / "tools" / "build_player_master.py"
+    pose_generator = project_root / "tools" / "build_player_readability_poses.py"
+    pose_validator = project_root / "tools" / "validate_player_pose_gate.py"
     plan = project_root / "art" / "normalization_plan.json"
     manifest = project_root / "art" / "production_sprite_manifest.json"
+    pose_contract = project_root / "art" / "player_pose_gate.json"
 
-    run(sys.executable, str(generator), "--output", str(project_root / "art/master/player/player_master_v1.png"))
+    master_dir = project_root / "art/master/player"
+    run(
+        sys.executable,
+        str(generator),
+        "--output",
+        str(master_dir / "player_master_v1.png"),
+    )
+    run(
+        sys.executable,
+        str(pose_generator),
+        "--output-dir",
+        str(master_dir),
+    )
 
     report_dir = args.report_dir.resolve() if args.report_dir else None
     if report_dir:
@@ -47,19 +62,20 @@ def main() -> int:
         tmpdir = Path(tmp)
         normalizer = tmpdir / "png_sprite_normalize.py"
         auditor = tmpdir / "png_sprite_audit.py"
+        normalization_report = report_dir / "normalization_report.json" if report_dir else tmpdir / "normalization_report.json"
+        pose_report = report_dir / "player_pose_gate.json" if report_dir else tmpdir / "player_pose_gate.json"
         download(f"{ARCONT_RAW}/png_sprite_normalize.py", normalizer)
         download(f"{ARCONT_RAW}/png_sprite_audit.py", auditor)
 
-        normalize_cmd = [
+        run(
             sys.executable,
             str(normalizer),
             str(plan),
             "--project-root",
             str(project_root),
-        ]
-        if report_dir:
-            normalize_cmd.extend(["--report", str(report_dir / "normalization_report.json")])
-        run(*normalize_cmd)
+            "--report",
+            str(normalization_report),
+        )
 
         if args.audit:
             if report_dir:
@@ -76,7 +92,16 @@ def main() -> int:
             else:
                 run(sys.executable, str(auditor), str(manifest), "--project-root", str(project_root))
 
-    print(f"MORTOFE_PRODUCTION_ART_READY arcont={ARCONT_COMMIT} root={project_root.relative_to(repo_root)}")
+        run(
+            sys.executable,
+            str(pose_validator),
+            str(pose_contract),
+            str(normalization_report),
+            "--report",
+            str(pose_report),
+        )
+
+    print(f"MORTOFE_PRODUCTION_ART_READY arcont={ARCONT_COMMIT} root={project_root.relative_to(repo_root)} poses=idle,run,attack")
     return 0
 
 
