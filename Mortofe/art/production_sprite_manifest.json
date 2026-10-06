@@ -18,10 +18,13 @@
       "pivot": [192, 350],
       "states": {
         "idle": [
-          {
-            "path": "res://art/normalized/player/player_idle_prod_v1.png",
-            "pivot": [192, 350]
-          }
+          {"path": "res://art/normalized/player/player_idle_prod_v1.png", "pivot": [192, 350]}
+        ],
+        "run": [
+          {"path": "res://art/normalized/player/player_run_prod_v1.png", "pivot": [192, 350]}
+        ],
+        "attack": [
+          {"path": "res://art/normalized/player/player_attack_prod_v1.png", "pivot": [192, 350]}
         ]
       }
     }
