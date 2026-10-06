@@ -7,7 +7,8 @@
     "immutable_approved_master": true,
     "atlas_after_animation_approval": true,
     "required_files": ["metadata.json", "master.png", "normalized.png"],
-    "states": ["planned", "draft", "review", "approved", "rejected", "superseded"]
+    "states": ["planned", "draft", "review", "approved", "rejected", "superseded"],
+    "advance_rule": "do not create the next frame in an animation until the current frame leaves review"
   },
   "sprites": [
     {
@@ -16,7 +17,8 @@
       "animation": "idle",
       "frame": 1,
       "folder": "res://art/production/player/idle/SPR_PLAYER_IDLE_001",
-      "status": "planned"
+      "status": "review",
+      "required_user_visual_approval": true
     }
   ]
 }
