@@ -1,0 +1,51 @@
+{
+  "alpha_threshold": 8,
+  "baseline_drift_px": 0.0,
+  "id": "SPR_PLAYER_IDLE_001",
+  "master_png_sha256": "e31d62f48996b20981af970544ca98ab2bbc13a65fbe7e46a8703c13e4a46478",
+  "normalized_alpha_bbox": [
+    71,
+    49,
+    312,
+    350
+  ],
+  "normalized_png_sha256": "d1798cd607f20292347327bb1363346dc5aa9f158ca3cb120a96ee80b2bea26e",
+  "normalized_visual_size": [
+    241,
+    301
+  ],
+  "offset": [
+    44,
+    48
+  ],
+  "pivot_center_drift_px": 0.5,
+  "scale": 1.4354066985645932,
+  "scaled_size": [
+    293,
+    304
+  ],
+  "schema_version": 1,
+  "source_alpha_bbox": [
+    20,
+    1,
+    186,
+    210
+  ],
+  "source_encoding": "webp-base64",
+  "source_size": [
+    204,
+    212
+  ],
+  "source_webp_sha256": "811d873ddd544b4e78313bf4d65c43d784cdd7be50007184956a823674df5a89",
+  "status": "planned",
+  "target_baseline_y": 350.0,
+  "target_canvas": [
+    384,
+    384
+  ],
+  "target_pivot": [
+    192.0,
+    350.0
+  ],
+  "target_visual_height": 300.0
+}
