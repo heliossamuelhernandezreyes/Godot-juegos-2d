@@ -6,16 +6,17 @@
   "animation": "idle",
   "frame": 1,
   "phase": "neutral",
-  "status": "planned",
+  "status": "review",
   "art_direction": {
     "style": "dark medieval baroque",
     "rendering": "non-pixel 2D illustrated sprite",
     "silhouette": "strong mobile-readable full-body silhouette",
     "palette": ["blackened steel", "deep crimson", "aged gold"],
     "equipment": "long polearm",
-    "notes": "No procedural placeholder art. This unit is reserved for the first real production player sprite."
+    "notes": "No procedural placeholder art. This is the first individually tracked production-art review unit."
   },
   "source": {
+    "encoded_review_source": "source.webp.b64",
     "master": "master.png",
     "master_locked_after_approval": true
   },
@@ -27,11 +28,18 @@
     "target_visual_height": 300,
     "alpha_threshold": 8
   },
+  "evidence": {
+    "build_report": "build_report.json",
+    "source_webp_sha256": "811d873ddd544b4e78313bf4d65c43d784cdd7be50007184956a823674df5a89",
+    "master_png_sha256": "e31d62f48996b20981af970544ca98ab2bbc13a65fbe7e46a8703c13e4a46478",
+    "normalized_png_sha256": "d1798cd607f20292347327bb1363346dc5aa9f158ca3cb120a96ee80b2bea26e"
+  },
   "review": {
-    "identity_consistency": "pending",
-    "silhouette": "pending",
-    "material_readability": "pending",
-    "mobile_scale_readability": "pending",
-    "pivot_baseline": "pending"
+    "identity_consistency": "pending-user-visual-review",
+    "silhouette": "pending-user-visual-review",
+    "material_readability": "pending-user-visual-review",
+    "mobile_scale_readability": "pending-user-visual-review",
+    "pivot_baseline": "pass-mechanical",
+    "approval_required_before_next_idle_frame": true
   }
 }
