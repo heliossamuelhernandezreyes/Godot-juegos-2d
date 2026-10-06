@@ -3,7 +3,9 @@ extends SceneTree
 const WIDTH := 1280
 const HEIGHT := 720
 const OUTPUT_DIR := "res://captures"
-const PLAYER_PRODUCTION_CANDIDATE_PATH := "res://art/normalized/player/player_idle_prod_v1.png"
+const PLAYER_PRODUCTION_IDLE_PATH := "res://art/normalized/player/player_idle_prod_v1.png"
+const PLAYER_PRODUCTION_RUN_PATH := "res://art/normalized/player/player_run_prod_v1.png"
+const PLAYER_PRODUCTION_ATTACK_PATH := "res://art/normalized/player/player_attack_prod_v1.png"
 
 func _initialize() -> void:
 	call_deferred("_run")
@@ -66,12 +68,19 @@ func _run() -> void:
 	await _wait_frames(3)
 	await _capture("05_player_value_gate.png")
 
+	gate.queue_free()
+	await _wait_frames(2)
+	var pose_gate := _build_player_pose_gate()
+	root.add_child(pose_gate)
+	await _wait_frames(3)
+	await _capture("06_player_pose_gate.png")
+
 	quit(0)
 
 func _build_player_value_gate() -> Node2D:
 	var gate := Node2D.new()
 	gate.name = "PlayerValueGate"
-	var candidate := load(PLAYER_PRODUCTION_CANDIDATE_PATH) as Texture2D
+	var candidate := load(PLAYER_PRODUCTION_IDLE_PATH) as Texture2D
 	if candidate == null:
 		push_error("Could not load production candidate for value gate")
 		return gate
@@ -123,6 +132,92 @@ func _build_player_value_gate() -> Node2D:
 	title.position = Vector2(24.0, HEIGHT - 48.0)
 	title.add_theme_font_size_override("font_size", 16)
 	title.modulate = Color(1.0, 1.0, 1.0, 0.72)
+	title.z_index = 4
+	gate.add_child(title)
+	return gate
+
+func _build_player_pose_gate() -> Node2D:
+	var gate := Node2D.new()
+	gate.name = "PlayerPoseGateV2"
+
+	var background := Polygon2D.new()
+	background.polygon = PackedVector2Array([
+		Vector2(0, 0), Vector2(WIDTH, 0), Vector2(WIDTH, HEIGHT), Vector2(0, HEIGHT),
+	])
+	background.color = Color("171820")
+	background.z_index = -10
+	gate.add_child(background)
+
+	var paths := [PLAYER_PRODUCTION_IDLE_PATH, PLAYER_PRODUCTION_RUN_PATH, PLAYER_PRODUCTION_ATTACK_PATH]
+	var labels := ["IDLE / REFERENCE", "RUN / READABILITY", "ATTACK / REACH"]
+	var band_width := float(WIDTH) / 3.0
+	var floor_y := 560.0
+
+	for i in range(3):
+		var texture := load(paths[i]) as Texture2D
+		if texture == null:
+			push_error("Could not load pose gate texture: " + paths[i])
+			continue
+		var center_x := band_width * (float(i) + 0.5)
+
+		var floor_line := Line2D.new()
+		floor_line.points = PackedVector2Array([
+			Vector2(band_width * i + 28.0, floor_y),
+			Vector2(band_width * (i + 1) - 28.0, floor_y),
+		])
+		floor_line.width = 2.0
+		floor_line.default_color = Color(1.0, 1.0, 1.0, 0.3)
+		gate.add_child(floor_line)
+
+		var sprite := Sprite2D.new()
+		sprite.texture = texture
+		sprite.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+		sprite.scale = Vector2(0.5, 0.5)
+		sprite.position = Vector2(center_x, floor_y - 79.0)
+		sprite.z_index = 2
+		gate.add_child(sprite)
+
+		var caption := Label.new()
+		caption.text = labels[i]
+		caption.position = Vector2(band_width * i + 28.0, 38.0)
+		caption.add_theme_font_size_override("font_size", 18)
+		caption.modulate = Color(1.0, 1.0, 1.0, 0.84)
+		caption.z_index = 4
+		gate.add_child(caption)
+
+		if i == 2:
+			# Runtime attack contract: center=(44,-50), size=(82,58) from feet origin.
+			var hb_center := Vector2(center_x + 44.0, floor_y - 50.0)
+			var half := Vector2(41.0, 29.0)
+			var hitbox := Polygon2D.new()
+			hitbox.polygon = PackedVector2Array([
+				hb_center + Vector2(-half.x, -half.y),
+				hb_center + Vector2(half.x, -half.y),
+				hb_center + Vector2(half.x, half.y),
+				hb_center + Vector2(-half.x, half.y),
+			])
+			hitbox.color = Color(0.92, 0.16, 0.12, 0.18)
+			hitbox.z_index = 3
+			gate.add_child(hitbox)
+
+			var outline := Line2D.new()
+			outline.points = PackedVector2Array([
+				hb_center + Vector2(-half.x, -half.y),
+				hb_center + Vector2(half.x, -half.y),
+				hb_center + Vector2(half.x, half.y),
+				hb_center + Vector2(-half.x, half.y),
+				hb_center + Vector2(-half.x, -half.y),
+			])
+			outline.width = 2.0
+			outline.default_color = Color(1.0, 0.28, 0.2, 0.9)
+			outline.z_index = 4
+			gate.add_child(outline)
+
+	var title := Label.new()
+	title.text = "MORTOFE — PLAYER READABILITY GATE V2 — distinct idle / run / attack + runtime hitbox overlay"
+	title.position = Vector2(24.0, HEIGHT - 48.0)
+	title.add_theme_font_size_override("font_size", 16)
+	title.modulate = Color(1.0, 1.0, 1.0, 0.76)
 	title.z_index = 4
 	gate.add_child(title)
 	return gate

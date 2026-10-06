@@ -12,6 +12,14 @@
     {
       "input": "res://art/master/player/player_master_v1.png",
       "output": "res://art/normalized/player/player_idle_prod_v1.png"
+    },
+    {
+      "input": "res://art/master/player/player_run_master_v1.png",
+      "output": "res://art/normalized/player/player_run_prod_v1.png"
+    },
+    {
+      "input": "res://art/master/player/player_attack_master_v1.png",
+      "output": "res://art/normalized/player/player_attack_prod_v1.png"
     }
   ]
 }

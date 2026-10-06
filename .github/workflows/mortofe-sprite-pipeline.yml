@@ -5,13 +5,17 @@ on:
     paths:
       - 'Mortofe/art/**'
       - 'Mortofe/tools/build_player_master.py'
+      - 'Mortofe/tools/build_player_readability_poses.py'
       - 'Mortofe/tools/prepare_production_art.py'
+      - 'Mortofe/tools/validate_player_pose_gate.py'
       - '.github/workflows/mortofe-sprite-pipeline.yml'
   pull_request:
     paths:
       - 'Mortofe/art/**'
       - 'Mortofe/tools/build_player_master.py'
+      - 'Mortofe/tools/build_player_readability_poses.py'
       - 'Mortofe/tools/prepare_production_art.py'
+      - 'Mortofe/tools/validate_player_pose_gate.py'
       - '.github/workflows/mortofe-sprite-pipeline.yml'
   workflow_dispatch:
 
@@ -40,21 +44,41 @@ jobs:
             --project-root Mortofe \
             --audit \
             --report-dir /tmp/mortofe-sprite-reports
-          MASTER_1="$(sha256sum Mortofe/art/master/player/player_master_v1.png | awk '{print $1}')"
-          NORM_1="$(sha256sum Mortofe/art/normalized/player/player_idle_prod_v1.png | awk '{print $1}')"
-          printf 'master_sha256=%s\nnormalized_sha256=%s\n' "$MASTER_1" "$NORM_1" | tee /tmp/mortofe-sprite-reports/hashes.txt
 
-          # Consumer-level determinism check: rebuilding from the same recipe and pinned
-          # ARCONT commit must produce byte-identical master and normalized derivative.
+          test -s Mortofe/art/master/player/player_master_v1.png
+          test -s Mortofe/art/master/player/player_run_master_v1.png
+          test -s Mortofe/art/master/player/player_attack_master_v1.png
+          test -s Mortofe/art/normalized/player/player_idle_prod_v1.png
+          test -s Mortofe/art/normalized/player/player_run_prod_v1.png
+          test -s Mortofe/art/normalized/player/player_attack_prod_v1.png
+          test -s /tmp/mortofe-sprite-reports/player_pose_gate.json
+
+          sha256sum \
+            Mortofe/art/master/player/player_master_v1.png \
+            Mortofe/art/master/player/player_run_master_v1.png \
+            Mortofe/art/master/player/player_attack_master_v1.png \
+            Mortofe/art/normalized/player/player_idle_prod_v1.png \
+            Mortofe/art/normalized/player/player_run_prod_v1.png \
+            Mortofe/art/normalized/player/player_attack_prod_v1.png \
+            > /tmp/mortofe-sprite-reports/hashes-first.txt
+
+          # Consumer-level determinism check: rebuilding from the same recipes and
+          # pinned ARCONT commit must produce byte-identical masters and derivatives.
           python Mortofe/tools/prepare_production_art.py \
             --project-root Mortofe \
             --audit \
             --report-dir /tmp/mortofe-sprite-reports/repeat
-          MASTER_2="$(sha256sum Mortofe/art/master/player/player_master_v1.png | awk '{print $1}')"
-          NORM_2="$(sha256sum Mortofe/art/normalized/player/player_idle_prod_v1.png | awk '{print $1}')"
-          test "$MASTER_1" = "$MASTER_2"
-          test "$NORM_1" = "$NORM_2"
-          echo "deterministic=true" | tee -a /tmp/mortofe-sprite-reports/hashes.txt
+
+          sha256sum \
+            Mortofe/art/master/player/player_master_v1.png \
+            Mortofe/art/master/player/player_run_master_v1.png \
+            Mortofe/art/master/player/player_attack_master_v1.png \
+            Mortofe/art/normalized/player/player_idle_prod_v1.png \
+            Mortofe/art/normalized/player/player_run_prod_v1.png \
+            Mortofe/art/normalized/player/player_attack_prod_v1.png \
+            > /tmp/mortofe-sprite-reports/hashes-second.txt
+          diff -u /tmp/mortofe-sprite-reports/hashes-first.txt /tmp/mortofe-sprite-reports/hashes-second.txt
+          echo "deterministic=true" | tee /tmp/mortofe-sprite-reports/determinism.txt
 
       - name: Upload production sprite reports
         uses: actions/upload-artifact@v4
