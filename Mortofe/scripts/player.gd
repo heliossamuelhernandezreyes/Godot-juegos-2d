@@ -7,9 +7,13 @@ signal jumped(stage: int)
 const Hitbox2D = preload("res://scripts/combat/hitbox_2d.gd")
 const Hurtbox2D = preload("res://scripts/combat/hurtbox_2d.gd")
 const PLAYER_ATLAS: Texture2D = preload("res://art/generated/player_atlas.svg")
-const PLAYER_PRODUCTION_CANDIDATE_PATH := "res://art/normalized/player/player_idle_prod_v1.png"
+const PLAYER_PRODUCTION_IDLE_PATH := "res://art/normalized/player/player_idle_prod_v1.png"
+const PLAYER_PRODUCTION_RUN_PATH := "res://art/normalized/player/player_run_prod_v1.png"
+const PLAYER_PRODUCTION_ATTACK_PATH := "res://art/normalized/player/player_attack_prod_v1.png"
 const FRAME_SIZE := Vector2(256, 256)
 const PRODUCTION_CANDIDATE_MODE := true
+const ATTACK_HITBOX_CENTER := Vector2(44.0, -50.0)
+const ATTACK_HITBOX_SIZE := Vector2(82.0, 58.0)
 
 @export var move_speed := 285.0
 @export var ground_accel := 1900.0
@@ -75,7 +79,7 @@ func _physics_process(delta: float) -> void:
 		_apply_movement(delta)
 
 	if is_instance_valid(attack_hitbox):
-		attack_hitbox.position.x = 44.0 * float(facing)
+		attack_hitbox.position.x = ATTACK_HITBOX_CENTER.x * float(facing)
 	move_and_slide()
 	_update_visual()
 	queue_redraw()
@@ -170,8 +174,9 @@ func _build_hurtbox() -> void:
 func _build_attack_hitbox() -> void:
 	attack_hitbox = Hitbox2D.new()
 	var rect := RectangleShape2D.new()
-	rect.size = Vector2(82, 58)
+	rect.size = ATTACK_HITBOX_SIZE
 	attack_hitbox.configure(self, 1, 64, rect)
+	attack_hitbox.position = ATTACK_HITBOX_CENTER
 	add_child(attack_hitbox)
 
 func _atlas_frame(index: int) -> AtlasTexture:
@@ -195,25 +200,34 @@ func _add_candidate_animation(frames: SpriteFrames, name: StringName, texture: T
 	frames.set_animation_loop(name, looped)
 	frames.add_frame(name, texture)
 
+func _load_candidate_texture(path: String) -> Texture2D:
+	if not ResourceLoader.exists(path):
+		return null
+	return load(path) as Texture2D
+
 func _build_visual() -> void:
 	var frames := SpriteFrames.new()
 	if frames.has_animation(&"default"):
 		frames.remove_animation(&"default")
 
-	var candidate_texture: Texture2D = null
-	if PRODUCTION_CANDIDATE_MODE and ResourceLoader.exists(PLAYER_PRODUCTION_CANDIDATE_PATH):
-		candidate_texture = load(PLAYER_PRODUCTION_CANDIDATE_PATH) as Texture2D
-	production_candidate_active = candidate_texture != null
+	var idle_texture: Texture2D = null
+	var run_texture: Texture2D = null
+	var attack_texture: Texture2D = null
+	if PRODUCTION_CANDIDATE_MODE:
+		idle_texture = _load_candidate_texture(PLAYER_PRODUCTION_IDLE_PATH)
+		run_texture = _load_candidate_texture(PLAYER_PRODUCTION_RUN_PATH)
+		attack_texture = _load_candidate_texture(PLAYER_PRODUCTION_ATTACK_PATH)
+	production_candidate_active = idle_texture != null and run_texture != null and attack_texture != null
 
 	if production_candidate_active:
-		# Production gate v1 intentionally reuses one normalized frame across states.
-		# This validates silhouette, gameplay scale, pivot/baseline, HUD overlap and
-		# movement/camera integration before animation production is expanded.
-		_add_candidate_animation(frames, &"idle", candidate_texture, 1.0, true)
-		_add_candidate_animation(frames, &"run", candidate_texture, 1.0, true)
-		_add_candidate_animation(frames, &"jump", candidate_texture, 1.0, false)
-		_add_candidate_animation(frames, &"attack", candidate_texture, 1.0, false)
-		_add_candidate_animation(frames, &"hurt", candidate_texture, 1.0, false)
+		# Gate v2 uses three distinct readability poses while temporal animation is
+		# still intentionally deferred. Jump/hurt keep the neutral reference until
+		# their own production frames exist.
+		_add_candidate_animation(frames, &"idle", idle_texture, 1.0, true)
+		_add_candidate_animation(frames, &"run", run_texture, 1.0, true)
+		_add_candidate_animation(frames, &"jump", idle_texture, 1.0, false)
+		_add_candidate_animation(frames, &"attack", attack_texture, 1.0, false)
+		_add_candidate_animation(frames, &"hurt", idle_texture, 1.0, false)
 	else:
 		_add_animation(frames, &"idle", [0, 1], 2.4, true)
 		_add_animation(frames, &"run", [2, 3, 4, 5], 9.5, true)
