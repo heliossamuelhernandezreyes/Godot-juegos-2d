@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "candidate": "player-readability-v2",
+  "runtime_scale": 0.5,
+  "pivot": [192, 350],
+  "baseline_y": 350,
+  "max_cross_pose_visual_height_drift_pct": 2.0,
+  "poses": {
+    "idle": "res://art/normalized/player/player_idle_prod_v1.png",
+    "run": "res://art/normalized/player/player_run_prod_v1.png",
+    "attack": "res://art/normalized/player/player_attack_prod_v1.png"
+  },
+  "attack_hitbox": {
+    "center": [44, -50],
+    "size": [82, 58],
+    "max_visual_tip_gap_px": 6.0,
+    "require_hitbox_covers_visual_tip": true
+  }
+}
