@@ -75,6 +75,7 @@ jobs:
           test -s Mortofe/captures/03_double_jump.png
           test -s Mortofe/captures/04_locomotion_zone.png
           test -s Mortofe/captures/05_player_value_gate.png
+          test -s Mortofe/captures/06_player_pose_gate.png
           sha256sum Mortofe/captures/*.png
 
       - name: Upload screenshots
