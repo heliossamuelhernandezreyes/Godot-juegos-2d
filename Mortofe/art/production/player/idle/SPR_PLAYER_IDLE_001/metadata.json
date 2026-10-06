@@ -1,5 +1,5 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "id": "SPR_PLAYER_IDLE_001",
   "project": "Mortofe",
   "character": "player",
@@ -12,13 +12,18 @@
     "rendering": "non-pixel 2D illustrated sprite",
     "silhouette": "strong mobile-readable full-body silhouette",
     "palette": ["blackened steel", "deep crimson", "aged gold"],
-    "equipment": "long polearm",
-    "notes": "No procedural placeholder art. This is the first individually tracked production-art review unit."
+    "equipment": "long ornate polearm",
+    "notes": "User-approved high-resolution character design. This replaces the earlier low-resolution review source; no procedural placeholder art is accepted as production art."
   },
   "source": {
-    "encoded_review_source": "source.webp.b64",
+    "encoding": "webp-base64-parts",
+    "encoded_review_source_pattern": "source.webp.b64.partNN",
+    "source_parts": 7,
+    "source_resolution": [1254, 1254],
+    "sha256": "ed7947d81a7459a95b81b61d524253443c12c0936677770e853c3740f4c15462",
     "master": "master.png",
-    "master_locked_after_approval": true
+    "master_locked_after_approval": true,
+    "design_approved_by_user": true
   },
   "runtime": {
     "normalized": "normalized.png",
@@ -30,16 +35,15 @@
   },
   "evidence": {
     "build_report": "build_report.json",
-    "source_webp_sha256": "811d873ddd544b4e78313bf4d65c43d784cdd7be50007184956a823674df5a89",
-    "master_png_sha256": "e31d62f48996b20981af970544ca98ab2bbc13a65fbe7e46a8703c13e4a46478",
-    "normalized_png_sha256": "d1798cd607f20292347327bb1363346dc5aa9f158ca3cb120a96ee80b2bea26e"
+    "source_webp_sha256": "ed7947d81a7459a95b81b61d524253443c12c0936677770e853c3740f4c15462",
+    "runtime_in_game_review": "pending-ci-capture"
   },
   "review": {
-    "identity_consistency": "pending-user-visual-review",
-    "silhouette": "pending-user-visual-review",
-    "material_readability": "pending-user-visual-review",
-    "mobile_scale_readability": "pending-user-visual-review",
-    "pivot_baseline": "pass-mechanical",
+    "identity_consistency": "pass-user-design-approval",
+    "silhouette": "pass-user-design-approval",
+    "material_readability": "pass-user-design-approval",
+    "mobile_scale_readability": "pending-ci-capture",
+    "pivot_baseline": "pending-highres-materialization",
     "approval_required_before_next_idle_frame": true
   }
 }

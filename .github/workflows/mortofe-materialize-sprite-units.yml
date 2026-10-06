@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - 'Mortofe/art/production/**/source.webp.b64'
+      - 'Mortofe/art/production/**/source.webp.b64.part*'
       - 'Mortofe/art/production/**/metadata.json'
       - 'Mortofe/tools/materialize_sprite_units.py'
       - '.github/workflows/mortofe-materialize-sprite-units.yml'
@@ -36,11 +37,14 @@ jobs:
           python - <<'PY'
           from pathlib import Path
           from PIL import Image
-          units = sorted(Path('Mortofe/art/production').rglob('source.webp.b64'))
+          units = []
+          for metadata in sorted(Path('Mortofe/art/production').rglob('metadata.json')):
+              unit = metadata.parent
+              if (unit / 'source.webp.b64').exists() or list(unit.glob('source.webp.b64.part*')):
+                  units.append(unit)
           if not units:
               raise SystemExit('no sprite units found')
-          for source in units:
-              unit = source.parent
+          for unit in units:
               for filename in ('master.png', 'normalized.png'):
                   path = unit / filename
                   if not path.exists():
@@ -66,9 +70,5 @@ jobs:
             exit 0
           fi
           git commit -m 'art(mortofe): materialize production sprite units'
-          # The branch may advance while this run is working (for example, a
-          # catalog-only commit made seconds after metadata changes). Rebase the
-          # generated commit onto the newest remote head before pushing instead
-          # of failing with a non-fast-forward update.
           git pull --rebase origin "${GITHUB_REF_NAME}"
           git push origin "HEAD:${GITHUB_REF_NAME}"

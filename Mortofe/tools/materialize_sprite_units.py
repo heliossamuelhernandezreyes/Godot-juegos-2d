@@ -1,15 +1,17 @@
 #!/usr/bin/env python3
-"""Materialize Mortofe per-sprite production units from compact encoded sources.
+"""Materialize Mortofe per-sprite production units from encoded review sources.
 
 Each sprite unit is self-contained:
   metadata.json
-  source.webp.b64   (review/source payload; text-safe for Git tooling)
-  master.png        (materialized RGBA source pixels)
-  normalized.png    (runtime canvas)
-  build_report.json (reproducibility/evidence)
+  source.webp.b64 OR source.webp.b64.partNN
+  master.png
+  normalized.png
+  build_report.json
 
-This script does not approve art. It only materializes and normalizes the exact
-review source into deterministic runtime assets.
+Chunked sources exist because some Git transports are text-oriented. When chunks
+exist they always take precedence over the legacy single source file. This
+script does not approve art; it materializes and normalizes the exact review
+source deterministically.
 """
 
 from __future__ import annotations
@@ -47,10 +49,35 @@ def write_png(image: Image.Image, path: Path) -> bytes:
     return data
 
 
+def read_encoded_source(unit_dir: Path) -> tuple[bytes, str, int]:
+    source_path = unit_dir / "source.webp.b64"
+    source_parts = sorted(unit_dir.glob("source.webp.b64.part*"))
+
+    if source_parts:
+        encoded = "".join(
+            "".join(part.read_text(encoding="ascii").split())
+            for part in source_parts
+        )
+        source_encoding = "webp-base64-parts"
+        source_part_count = len(source_parts)
+    elif source_path.exists():
+        encoded = "".join(source_path.read_text(encoding="ascii").split())
+        source_encoding = "webp-base64"
+        source_part_count = 1
+    else:
+        raise FileNotFoundError(f"sprite unit has no encoded source: {unit_dir}")
+
+    try:
+        payload = base64.b64decode(encoded, validate=True)
+    except Exception as exc:
+        raise ValueError(f"invalid base64 sprite source in {unit_dir}: {exc}") from exc
+
+    return payload, source_encoding, source_part_count
+
+
 def materialize_unit(unit_dir: Path) -> dict[str, Any]:
     metadata_path = unit_dir / "metadata.json"
-    source_path = unit_dir / "source.webp.b64"
-    if not metadata_path.exists() or not source_path.exists():
+    if not metadata_path.exists():
         raise FileNotFoundError(f"incomplete sprite unit: {unit_dir}")
 
     metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
@@ -64,8 +91,14 @@ def materialize_unit(unit_dir: Path) -> dict[str, Any]:
     if abs(pivot_y - baseline_y) > 1e-6:
         raise ValueError(f"{metadata['id']}: pivot y must equal baseline y for feet-anchored sprites")
 
-    encoded = "".join(source_path.read_text(encoding="ascii").split())
-    webp_bytes = base64.b64decode(encoded, validate=True)
+    webp_bytes, source_encoding, source_part_count = read_encoded_source(unit_dir)
+    source_sha = sha256_bytes(webp_bytes)
+    expected_source_sha = metadata.get("source", {}).get("sha256")
+    if expected_source_sha and source_sha != expected_source_sha:
+        raise ValueError(
+            f"{metadata['id']}: source sha256 mismatch: expected={expected_source_sha}, actual={source_sha}"
+        )
+
     source = Image.open(io.BytesIO(webp_bytes)).convert("RGBA")
     source_bbox = alpha_bbox(source, alpha_threshold)
     source_visual_height = source_bbox[3] - source_bbox[1]
@@ -104,11 +137,12 @@ def materialize_unit(unit_dir: Path) -> dict[str, Any]:
     normalized_bytes = write_png(canvas, unit_dir / "normalized.png")
 
     report = {
-        "schema_version": 1,
+        "schema_version": 2,
         "id": metadata["id"],
         "status": metadata.get("status", "unknown"),
-        "source_encoding": "webp-base64",
-        "source_webp_sha256": sha256_bytes(webp_bytes),
+        "source_encoding": source_encoding,
+        "source_part_count": source_part_count,
+        "source_webp_sha256": source_sha,
         "master_png_sha256": sha256_bytes(master_bytes),
         "normalized_png_sha256": sha256_bytes(normalized_bytes),
         "source_size": [source.width, source.height],
@@ -141,16 +175,23 @@ def main() -> int:
     args = parser.parse_args()
 
     root = Path(args.root)
-    sources = sorted(root.rglob("source.webp.b64"))
-    if not sources:
-        raise SystemExit("no sprite source.webp.b64 files found")
+    metadata_files = sorted(root.rglob("metadata.json"))
+    unit_dirs = [
+        path.parent
+        for path in metadata_files
+        if (path.parent / "source.webp.b64").exists()
+        or any(path.parent.glob("source.webp.b64.part*"))
+    ]
+    if not unit_dirs:
+        raise SystemExit("no encoded sprite units found")
 
     reports = []
-    for source in sources:
-        report = materialize_unit(source.parent)
+    for unit_dir in unit_dirs:
+        report = materialize_unit(unit_dir)
         reports.append(report)
         print(
-            f"{report['id']}: normalized bbox={report['normalized_alpha_bbox']} "
+            f"{report['id']}: source={report['source_size']} "
+            f"normalized bbox={report['normalized_alpha_bbox']} "
             f"baseline drift={report['baseline_drift_px']} "
             f"pivot drift={report['pivot_center_drift_px']}"
         )
