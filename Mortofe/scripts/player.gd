@@ -7,7 +7,7 @@ signal jumped(stage: int)
 const Hitbox2D = preload("res://scripts/combat/hitbox_2d.gd")
 const Hurtbox2D = preload("res://scripts/combat/hurtbox_2d.gd")
 const PLAYER_ATLAS: Texture2D = preload("res://art/generated/player_atlas.svg")
-const PLAYER_PRODUCTION_CANDIDATE_PATH := "res://art/normalized/player/player_idle_prod_v1.png"
+const PLAYER_PRODUCTION_CANDIDATE_PATH := "res://art/production/player/idle/SPR_PLAYER_IDLE_001/normalized.png"
 const FRAME_SIZE := Vector2(256, 256)
 const PRODUCTION_CANDIDATE_MODE := true
 
@@ -206,9 +206,8 @@ func _build_visual() -> void:
 	production_candidate_active = candidate_texture != null
 
 	if production_candidate_active:
-		# Production gate v1 intentionally reuses one normalized frame across states.
-		# This validates silhouette, gameplay scale, pivot/baseline, HUD overlap and
-		# movement/camera integration before animation production is expanded.
+		# Per-sprite production gate: the first approved design is intentionally
+		# reused across states until the remaining individually tracked frames exist.
 		_add_candidate_animation(frames, &"idle", candidate_texture, 1.0, true)
 		_add_candidate_animation(frames, &"run", candidate_texture, 1.0, true)
 		_add_candidate_animation(frames, &"jump", candidate_texture, 1.0, false)
@@ -226,8 +225,8 @@ func _build_visual() -> void:
 	visual.animation = &"idle"
 	if production_candidate_active:
 		# Normalized asset: 384x384, baseline y=350, center y=192.
-		# (350 - 192) * 0.5 = 79 px, so this keeps the visual feet on body origin.
-		# 300 px visual height * 0.5 = 150 px ~= 20.8% of the 720p design height.
+		# (350 - 192) * 0.5 = 79 px keeps the visual feet on body origin.
+		# 300 px visual height * 0.5 = 150 px ~= 20.8% of 720p design height.
 		visual.position = Vector2(0, -79)
 		visual.scale = Vector2(0.5, 0.5)
 	else:

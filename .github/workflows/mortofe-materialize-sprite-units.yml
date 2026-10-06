@@ -1,0 +1,74 @@
+name: Mortofe materialize sprite units
+
+on:
+  push:
+    paths:
+      - 'Mortofe/art/production/**/source.webp.b64'
+      - 'Mortofe/art/production/**/source.webp.b64.part*'
+      - 'Mortofe/art/production/**/metadata.json'
+      - 'Mortofe/tools/materialize_sprite_units.py'
+      - '.github/workflows/mortofe-materialize-sprite-units.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install pinned Pillow
+        run: python -m pip install --disable-pip-version-check 'Pillow==10.4.0'
+
+      - name: Materialize sprite units
+        run: python Mortofe/tools/materialize_sprite_units.py
+
+      - name: Verify RGBA PNG outputs
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from PIL import Image
+          units = []
+          for metadata in sorted(Path('Mortofe/art/production').rglob('metadata.json')):
+              unit = metadata.parent
+              if (unit / 'source.webp.b64').exists() or list(unit.glob('source.webp.b64.part*')):
+                  units.append(unit)
+          if not units:
+              raise SystemExit('no sprite units found')
+          for unit in units:
+              for filename in ('master.png', 'normalized.png'):
+                  path = unit / filename
+                  if not path.exists():
+                      raise SystemExit(f'missing {path}')
+                  with Image.open(path) as image:
+                      if image.mode != 'RGBA':
+                          raise SystemExit(f'{path}: expected RGBA, got {image.mode}')
+                      if image.format != 'PNG':
+                          raise SystemExit(f'{path}: expected PNG, got {image.format}')
+          print(f'verified {len(units)} sprite unit(s)')
+          PY
+
+      - name: Commit materialized assets
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add Mortofe/art/production/**/master.png \
+                  Mortofe/art/production/**/normalized.png \
+                  Mortofe/art/production/**/build_report.json
+          if git diff --cached --quiet; then
+            echo 'No generated sprite changes.'
+            exit 0
+          fi
+          git commit -m 'art(mortofe): materialize production sprite units'
+          git pull --rebase origin "${GITHUB_REF_NAME}"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
